@@ -1,0 +1,119 @@
+/* OFFICER: authentication gate overlay */
+
+/* ========================================================
+   OFFICER AUTHENTICATION GATE
+   ======================================================== */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.06) 0 1px, transparent 1px 4px),
+    rgba(220, 216, 208, 0.96);
+  padding: 24px;
+}
+
+.auth-window {
+  width: min(460px, 100%);
+  background: var(--surface-alt);
+  border: 3px solid var(--border-black);
+  box-shadow: 8px 8px 0px var(--border-black);
+  padding: 22px;
+}
+
+.auth-window-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--border-black);
+  color: var(--primary);
+  padding: 10px 12px;
+  margin: -22px -22px 18px -22px;
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+.auth-window-sub {
+  color: var(--surface-alt);
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.auth-copy {
+  font-size: 16px;
+  line-height: 1.35;
+  margin-bottom: 18px;
+  color: var(--text-secondary);
+}
+
+.auth-copy code {
+  background: var(--surface-header);
+  border: 1px solid var(--border-gray);
+  padding: 1px 4px;
+}
+
+.auth-label {
+  display: block;
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin: 12px 0 6px;
+}
+
+.auth-input {
+  width: 100%;
+  background: #FFFFFF;
+  border: 2px solid var(--border-black);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  padding: 8px 10px;
+  outline: none;
+  box-shadow: 2px 2px 0px var(--border-black);
+}
+
+.auth-input:focus {
+  outline: 2px solid var(--focus-ring);
+}
+
+.auth-submit-btn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 10px 12px;
+  background: var(--primary);
+  border: 2px solid var(--border-black);
+  box-shadow: 3px 3px 0px var(--border-black);
+  color: var(--border-black);
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.auth-submit-btn:hover {
+  background: var(--primary-hover);
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.auth-error {
+  margin-top: 14px;
+  padding: 8px 10px;
+  border: 2px solid var(--red-alert);
+  background: #FFF0F2;
+  color: #B00020;
+  font-size: 15px;
+}
+
+.recording-off {
+  opacity: 0.55;
+  filter: grayscale(1);
+}

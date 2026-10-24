@@ -1,93 +1,125 @@
 import asyncio
+import inspect
 import json
+import os
+
+import requests
 import websockets
+from dotenv import load_dotenv
+
+load_dotenv()
+
+BASE_HTTP = os.getenv("CERS_E2E_BASE_URL", "http://localhost:8000")
+BASE_WS = BASE_HTTP.replace("http://", "ws://").replace("https://", "wss://")
+OFFICER_TOKEN = os.getenv("CERS_OFFICER_TOKEN", "")
+
+# websockets renamed extra_headers to additional_headers in newer releases.
+_HEADER_KW = (
+    "additional_headers"
+    if "additional_headers" in inspect.signature(websockets.connect).parameters
+    else "extra_headers"
+)
+
+
+def officer_session(officer_id):
+    session = requests.Session()
+    response = session.post(
+        f"{BASE_HTTP}/api/auth/login",
+        json={"token": OFFICER_TOKEN, "officer_id": officer_id},
+        timeout=10,
+    )
+    response.raise_for_status()
+    return session
+
+
+def cookie_header(session):
+    return "; ".join(f"{key}={value}" for key, value in session.cookies.items())
+
+
+def connect(url, session):
+    return websockets.connect(url, **{_HEADER_KW: {"Cookie": cookie_header(session)}})
+
+
+async def recv_event(websocket, timeout=5):
+    return json.loads(await asyncio.wait_for(websocket.recv(), timeout))
+
 
 async def test_end_to_end_flow():
-    server_base = "ws://localhost:8000"
-    
-    print("--- 1. Connecting Officer 1 and Officer 2 WebSockets ---")
-    async with websockets.connect(f"{server_base}/ws/officer/OFFICER_01") as ws_off1, \
-               websockets.connect(f"{server_base}/ws/officer/OFFICER_02") as ws_off2:
-               
-        # Both officers receive initial queue snapshot
-        snap1 = json.loads(await ws_off1.recv())
-        snap2 = json.loads(await ws_off2.recv())
-        print("Officer 1 received snapshot:", snap1.get("event"))
-        print("Officer 2 received snapshot:", snap2.get("event"))
+    if not OFFICER_TOKEN:
+        raise SystemExit(
+            "Set CERS_OFFICER_TOKEN to the same value used by the server before running this test."
+        )
 
-        print("\n--- 2. Caller dials 2007 ---")
-        async with websockets.connect(f"{server_base}/ws/caller/2007") as ws_caller:
-            # Both officers should receive NEW_CALL broadcast
-            new_call_msg1 = json.loads(await ws_off1.recv())
-            new_call_msg2 = json.loads(await ws_off2.recv())
-            print(f"Officer 1 received: {new_call_msg1.get('event')} for #{new_call_msg1['call']['call_id']}")
-            print(f"Officer 2 received: {new_call_msg2.get('event')} for #{new_call_msg2['call']['call_id']}")
+    print("--- 1. Authenticating two officers ---")
+    off1_session = officer_session("OFFICER_01")
+    off2_session = officer_session("OFFICER_02")
 
-            print("\n--- 3. Caller finishes IVR & Beep -> Status becomes WAITING ---")
+    async with connect(f"{BASE_WS}/ws/officer/OFFICER_01", off1_session) as ws_off1, \
+               connect(f"{BASE_WS}/ws/officer/OFFICER_02", off2_session) as ws_off2:
+        assert (await recv_event(ws_off1))["event"] == "QUEUE_SNAPSHOT"
+        assert (await recv_event(ws_off2))["event"] == "QUEUE_SNAPSHOT"
+
+        print("--- 2. Creating a server-side call session ---")
+        created = requests.post(
+            f"{BASE_HTTP}/api/calls",
+            json={"dialed_number": "2007"},
+            timeout=10,
+        )
+        created.raise_for_status()
+        call_id = created.json()["call_id"]
+
+        async with websockets.connect(f"{BASE_WS}/ws/caller/{call_id}") as ws_caller:
+            new1 = await recv_event(ws_off1)
+            new2 = await recv_event(ws_off2)
+            assert new1["event"] == "NEW_CALL" and new1["call"]["call_id"] == call_id
+            assert new2["event"] == "NEW_CALL" and new2["call"]["call_id"] == call_id
+
+            print("--- 3. IVR lifecycle ---")
+            await ws_caller.send(json.dumps({"action": "IVR_STARTED"}))
+            assert (await recv_event(ws_off1))["status"] == "IVR"
+            assert (await recv_event(ws_off2))["status"] == "IVR"
             await ws_caller.send(json.dumps({"action": "IVR_FINISHED"}))
-            status_msg1 = json.loads(await ws_off1.recv())
-            status_msg2 = json.loads(await ws_off2.recv())
-            print("Officer 1 received status change:", status_msg1)
-            print("Officer 2 received status change:", status_msg2)
+            assert (await recv_event(ws_off1))["status"] == "WAITING"
+            assert (await recv_event(ws_off2))["status"] == "WAITING"
 
-            print("\n--- 4. Officer 1 claims Call 2007 ---")
-            await ws_off1.send(json.dumps({"action": "CLAIM_CALL", "call_id": "2007"}))
+            print("--- 4. Atomic claim ---")
+            await ws_off1.send(json.dumps({"action": "CLAIM_CALL", "call_id": call_id}))
+            assert (await recv_event(ws_off1))["event"] == "CALL_CLAIMED"
+            assert (await recv_event(ws_off1))["event"] == "CLAIM_RESULT"
+            assert (await recv_event(ws_off2))["event"] == "CALL_CLAIMED"
+            assigned = await recv_event(ws_caller)
+            assert assigned["event"] == "OFFICER_ASSIGNED"
 
-            # Officer 1 receives CALL_CLAIMED broadcast and CLAIM_RESULT
-            claim_broadcast_off1 = json.loads(await ws_off1.recv())
-            claim_res_off1 = json.loads(await ws_off1.recv())
-            print("Officer 1 claim result:", claim_res_off1)
+            print("--- 5. Second officer is locked out ---")
+            await ws_off2.send(json.dumps({"action": "CLAIM_CALL", "call_id": call_id}))
+            lockout = await recv_event(ws_off2)
+            assert lockout["event"] == "CLAIM_RESULT"
+            assert lockout["success"] is False
 
-            # Officer 2 receives CALL_CLAIMED broadcast (lockout notification)
-            claim_broadcast_off2 = json.loads(await ws_off2.recv())
-            print(f"Officer 2 received lockout broadcast: Call {claim_broadcast_off2.get('call_id')} claimed by {claim_broadcast_off2.get('officer_id')}")
-
-            # Caller receives OFFICER_ASSIGNED notification
-            caller_assigned = json.loads(await ws_caller.recv())
-            print(f"Caller received officer assignment: {caller_assigned.get('officer_id')}")
-
-            print("\n--- 5. Officer 2 attempts to claim the same call (Should be locked out!) ---")
-            await ws_off2.send(json.dumps({"action": "CLAIM_CALL", "call_id": "2007"}))
-            claim_res_off2 = json.loads(await ws_off2.recv())
-            print("Officer 2 claim attempt response:", claim_res_off2)
-            assert claim_res_off2.get("success") is False, "Officer 2 should have been locked out!"
-            print("LOCKOUT VERIFIED: Officer 2 was successfully prevented from stealing the call!")
-
-            print("\n--- 6. WebRTC Signaling Relay ---")
-            mock_offer = {"type": "offer", "sdp": "v=0\r\no=mock-officer 123456 ..."}
+            print("--- 6. WebRTC signaling relay ---")
             await ws_off1.send(json.dumps({
                 "action": "WEBRTC_SIGNAL",
-                "call_id": "2007",
-                "payload": {"offer": mock_offer}
+                "call_id": call_id,
+                "payload": {"offer": {"type": "offer", "sdp": "v=0 mock offer"}},
             }))
+            assert (await recv_event(ws_caller))["event"] == "WEBRTC_SIGNAL"
 
-            # Caller receives the WebRTC Offer relayed by backend
-            caller_signal = json.loads(await ws_caller.recv())
-            print("Caller received WebRTC Offer relay:", caller_signal.get("payload", {}).get("offer", {}).get("type"))
-
-            # Caller sends WebRTC Answer
-            mock_answer = {"type": "answer", "sdp": "v=0\r\no=mock-caller 654321 ..."}
             await ws_caller.send(json.dumps({
                 "action": "WEBRTC_SIGNAL",
-                "payload": {"answer": mock_answer}
+                "payload": {"answer": {"type": "answer", "sdp": "v=0 mock answer"}},
             }))
+            assert (await recv_event(ws_off1))["event"] == "WEBRTC_SIGNAL"
 
-            # Officer 1 receives WebRTC Answer
-            off1_signal = json.loads(await ws_off1.recv())
-            print("Officer 1 received WebRTC Answer relay:", off1_signal.get("payload", {}).get("answer", {}).get("type"))
-
-            print("\n--- 7. End Call ---")
-            await ws_off1.send(json.dumps({"action": "END_CALL", "call_id": "2007"}))
-
-            end_msg_off1 = json.loads(await ws_off1.recv())
-            end_msg_off2 = json.loads(await ws_off2.recv())
-            caller_end = json.loads(await ws_caller.recv())
-
-            print("All parties cleanly notified of call completion.")
+            print("--- 7. End call and verify one event per party ---")
+            await ws_off1.send(json.dumps({"action": "END_CALL", "call_id": call_id}))
+            assert (await recv_event(ws_off1))["event"] == "CALL_ENDED"
+            assert (await recv_event(ws_off2))["event"] == "CALL_ENDED"
+            assert (await recv_event(ws_caller))["event"] == "CALL_ENDED"
 
     print("\n==========================================")
-    print("ALL END-TO-END FLOW TESTS PASSED 100%!")
+    print("ALL END-TO-END FLOW TESTS PASSED")
     print("==========================================")
+
 
 if __name__ == "__main__":
     asyncio.run(test_end_to_end_flow())

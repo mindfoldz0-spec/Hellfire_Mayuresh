@@ -17,6 +17,7 @@ htmlcov/
 backend/recordings/*.webm
 backend/recordings/*.json
 !backend/recordings/.gitkeep
+temp/
 
 # Operating System & Editor Files
 .DS_Store

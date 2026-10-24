@@ -1,0 +1,457 @@
+/* OFFICER: recordings vault modal, archive, playback, and notes */
+
+/* ========================================================
+   CALL RECORDINGS VAULT MODAL
+   ======================================================== */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.retro-window-modal {
+  width: 94vw;
+  max-width: 1240px;
+  height: 88vh;
+  background: var(--bg-canvas);
+  border: 2px solid var(--border-black);
+  box-shadow: 8px 8px 0px var(--border-black);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: popIn 0.2s cubic-bezier(0, 0, 0.2, 1);
+  transition: width 0.2s ease, height 0.2s ease, max-width 0.2s ease;
+}
+
+.retro-window-modal.maximized {
+  width: 98vw;
+  max-width: 98vw;
+  height: 94vh;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.window-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--surface-header);
+  border-bottom: 2px solid var(--border-black);
+}
+
+.window-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.window-icon {
+  font-size: 18px;
+}
+
+.window-title-text {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 1px;
+  color: var(--text-primary);
+}
+
+.window-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.win-btn {
+  background: var(--surface-alt);
+  border: 2px solid var(--border-black);
+  color: var(--text-primary);
+  width: 26px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 1px 1px 0px var(--border-black);
+  transition: all 0.1s ease;
+}
+
+.win-btn svg {
+  display: block;
+}
+
+.win-btn:hover {
+  background: var(--surface-header);
+}
+
+.win-btn.close-btn:hover {
+  background: var(--red-alert);
+  color: #FFF;
+}
+
+.win-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 0px 0px 0px var(--border-black);
+}
+
+.window-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--surface);
+  border-bottom: 2px dashed var(--border-black);
+  gap: 12px;
+}
+
+.toolbar-hint {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.toolbar-btn {
+  background: var(--surface-alt);
+  border: 2px solid var(--border-black);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: bold;
+  padding: 3px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 2px 2px 0px var(--border-black);
+}
+
+.toolbar-btn:hover {
+  background: var(--primary);
+}
+
+/* SPLIT LAYOUT */
+.window-split-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* SIDEBAR: RECORDINGS LIST */
+.intel-sidebar {
+  background: var(--surface);
+  border-right: 2px solid var(--border-black);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 10px 12px;
+  background: var(--surface-header);
+  border-bottom: 1px solid var(--border-black);
+}
+
+.sidebar-title {
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.sidebar-search {
+  padding: 8px;
+  border-bottom: 1px solid var(--border-gray);
+  background: var(--surface-alt);
+}
+
+.retro-search {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border-black);
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  outline: none;
+}
+
+.retro-search:focus {
+  outline: 2px solid var(--focus-ring);
+}
+
+.recordings-tree-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.empty-list-notice {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+  padding: 24px 12px;
+}
+
+.recording-tree-item {
+  background: var(--surface-alt);
+  border: 2px solid var(--border-black);
+  box-shadow: 2px 2px 0px var(--border-black);
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.recording-tree-item:hover {
+  background: #EFFFF0;
+  border-color: var(--border-black);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--border-black);
+}
+
+.recording-tree-item.selected {
+  background: var(--primary);
+  border-color: var(--border-black);
+  box-shadow: 2px 2px 0px var(--border-black);
+}
+
+.tree-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tree-item-id {
+  font-size: 17px;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.tree-item-tag {
+  background: var(--surface-header);
+  border: 1px solid var(--border-black);
+  font-size: 11px;
+  padding: 1px 5px;
+}
+
+.tree-item-sub {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* MAIN VIEW: SESSION DETAILS & AUDIO PLAYBACK */
+.intel-main-view {
+  background: var(--bg-canvas);
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.intel-empty-prompt {
+  margin: auto;
+  text-align: center;
+  max-width: 420px;
+  border: 2px dashed var(--border-gray);
+  padding: 40px 24px;
+  background: var(--surface-alt);
+}
+
+.intel-empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.intel-empty-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.intel-empty-sub {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.intel-detail-view {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* DETAIL HEADER */
+.detail-header-card {
+  background: var(--surface);
+  border: 2px solid var(--border-black);
+  box-shadow: 3px 3px 0px var(--border-black);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.detail-call-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.detail-call-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 1px;
+}
+
+.session-badge {
+  font-size: 13px;
+  font-weight: bold;
+  padding: 2px 8px;
+  border: 1px solid var(--border-black);
+  background: #E8F8EA;
+  color: #0b6623;
+  display: inline-block;
+}
+
+.detail-meta-row {
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.detail-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn-small {
+  background: var(--surface-alt);
+  border: 2px solid var(--border-black);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: bold;
+  padding: 5px 12px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px var(--border-black);
+}
+
+.action-btn-small:hover {
+  background: var(--surface-header);
+}
+
+.action-btn-small.primary-green {
+  background: var(--primary);
+}
+
+.action-btn-small.primary-green:hover {
+  background: var(--primary-hover);
+}
+
+/* AUDIO STATION */
+.intel-audio-station {
+  background: var(--surface-alt);
+  border: 2px solid var(--border-black);
+  box-shadow: 3px 3px 0px var(--border-black);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.audio-station-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text-secondary);
+}
+
+.retro-audio-player {
+  width: 100%;
+  height: 38px;
+  outline: none;
+}
+
+/* SESSION 2x2 INFO GRID */
+.session-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.info-card {
+  background: var(--surface-alt);
+  border: 2px solid var(--border-black);
+  box-shadow: 2px 2px 0px var(--border-black);
+  padding: 10px 12px;
+}
+
+.info-card-label {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.info-card-val {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+/* OFFICER NOTES IN MODAL */
+.officer-notes-box {
+  background: var(--surface-alt);
+  border: 2px solid var(--border-black);
+  box-shadow: 2px 2px 0px var(--border-black);
+  padding: 10px 12px;
+}
+
+.notes-save-btn {
+  background: var(--primary);
+  border: 1px solid var(--border-black);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: bold;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.notes-save-btn:hover {
+  background: var(--primary-hover);
+}
+
+.intel-notes-textarea {
+  width: 100%;
+  height: 60px;
+  background: #FFF;
+  border: 1px solid var(--border-black);
+  padding: 8px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  resize: none;
+  outline: none;
+}
+
+.intel-notes-textarea:focus {
+  outline: 2px solid var(--focus-ring);
+}

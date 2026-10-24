@@ -1,0 +1,25 @@
+/** Shared mutable state for the caller dialer. */
+
+export const state = {
+  dialedNumber: "2007",
+  sessionId: null,
+  ws: null,
+  localStream: null,
+  peerConnection: null,
+  timerInterval: null,
+  callSeconds: 0,
+  isMuted: false,
+  audioCtx: null,
+  analyserNode: null,
+  micVisualizerSource: null,
+  remoteVisualizerSource: null,
+  animationFrameId: null,
+  toneCtx: null,
+  messageChain: Promise.resolve(),
+  pendingCandidates: [],
+  ivrFinished: false,
+  ivrTimeUpdateHandler: null,
+  ivrFallbackTimer: null,
+  isTerminating: false,
+  rtcConfigPromise: null,
+};

@@ -7,7 +7,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=VT323&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/officer/style.css">
+  <link rel="stylesheet" href="/officer/css/base.css">
+  <link rel="stylesheet" href="/officer/css/command-bar.css">
+  <link rel="stylesheet" href="/officer/css/layout.css">
+  <link rel="stylesheet" href="/officer/css/queue.css">
+  <link rel="stylesheet" href="/officer/css/station.css">
+  <link rel="stylesheet" href="/officer/css/taskbar.css">
+  <link rel="stylesheet" href="/officer/css/vault.css">
+  <link rel="stylesheet" href="/officer/css/auth.css">
 </head>
 <body>
   <!-- TOP COMMAND BAR -->
@@ -39,7 +46,7 @@
         <span id="gateway-status">GATEWAY ONLINE</span>
       </div>
       <div id="system-clock" class="telemetry-pill mono">00:00:00 UTC</div>
-      <button id="header-vault-btn" class="header-vault-pill" title="Open Forensic Intelligence Vault">[ 🗄️ FORENSIC VAULT ]</button>
+      <button id="header-vault-btn" class="header-vault-pill" title="Open Call Recordings Vault">[ 🗄️ RECORDINGS VAULT ]</button>
     </div>
   </header>
 
@@ -180,9 +187,10 @@
       <span class="start-menu-sub">CYBER DISPATCH DESKTOP</span>
     </div>
     <div class="start-menu-items">
-      <button id="menu-intel-btn" class="start-item">🗄️ Call Recordings & Intel Vault</button>
+      <button id="menu-intel-btn" class="start-item">🗄️ Call Recordings Vault</button>
       <button id="menu-refresh-btn" class="start-item">🔄 Re-sync Emergency Queue</button>
       <button id="menu-about-btn" class="start-item">ℹ️ System Info & Lockout Protocol</button>
+      <button id="menu-logout-btn" class="start-item">🚪 Sign Out</button>
     </div>
   </div>
 
@@ -191,7 +199,7 @@
     <div class="taskbar-left">
       <button id="taskbar-start-btn" class="taskbar-btn start-btn">[ ⚡ CERS-OS ]</button>
       <button id="open-intel-btn" class="taskbar-btn app-btn active-app">
-        <span>🗄️ CALL RECORDINGS & INTELLIGENCE VAULT</span>
+        <span>🗄️ CALL RECORDINGS VAULT</span>
         <span id="vault-badge-count" class="taskbar-badge">0</span>
       </button>
     </div>
@@ -203,14 +211,14 @@
     </div>
   </footer>
 
-  <!-- CALL RECORDINGS & INTELLIGENCE ANALYSIS MODAL WINDOW -->
+  <!-- CALL RECORDINGS VAULT MODAL WINDOW -->
   <div id="intel-modal-backdrop" class="modal-backdrop hidden">
     <div id="retro-window-modal" class="retro-window-modal">
       <!-- Window Title Bar -->
       <div class="window-title-bar">
         <div class="window-title-group">
           <span class="window-icon">🗄️</span>
-          <h2 class="window-title-text">CERS-OS: CALL FORENSICS & INTELLIGENCE ANALYSIS</h2>
+          <h2 class="window-title-text">CERS-OS: CALL RECORDINGS VAULT</h2>
         </div>
         <div class="window-controls">
           <button id="min-intel-modal-btn" class="win-btn" title="Minimize Window">
@@ -235,7 +243,7 @@
       <!-- Window Subheader / Toolbar -->
       <div class="window-toolbar">
         <div class="toolbar-hint">
-          <span>AI INTELLIGENCE SUITE (PHASE 2 PREVIEW): Select any recorded emergency call to view automated transcription, acoustic distress breakdown, and extracted key incident data.</span>
+          <span>ARCHIVED CALL SESSIONS: Select any recorded call session to listen to audio playback, review duration and file metadata, and view or edit officer notes.</span>
         </div>
         <button id="refresh-vault-btn" class="toolbar-btn">[ 🔄 Refresh Archive ]</button>
       </div>
@@ -251,16 +259,16 @@
             <input type="text" id="intel-search-input" class="retro-search" placeholder="[ Filter by call ID / notes... ]">
           </div>
           <div id="modal-recordings-list" class="recordings-tree-list">
-            <div class="empty-list-notice">No recorded calls found. Complete an emergency call to begin forensic analysis.</div>
+            <div class="empty-list-notice">No recorded calls found. Complete an emergency call to store a session recording.</div>
           </div>
         </aside>
 
-        <!-- Main Intel: Forensic Breakdown & Transcript -->
+        <!-- Main View: Recording Details & Playback -->
         <section class="intel-main-view">
           <div id="intel-empty-prompt" class="intel-empty-prompt">
             <div class="intel-empty-icon">📁</div>
             <h3 class="intel-empty-title">NO CALL SELECTED</h3>
-            <p class="intel-empty-sub">Choose a recorded emergency session from the archive list on the left to inspect audio, AI speech transcript, and extracted location intelligence.</p>
+            <p class="intel-empty-sub">Choose a recorded emergency session from the archive list on the left to listen to audio playback and inspect session details.</p>
           </div>
 
           <div id="intel-detail-view" class="intel-detail-view hidden">
@@ -269,7 +277,7 @@
               <div class="detail-header-left">
                 <div class="detail-call-title-row">
                   <h3 id="intel-call-id" class="detail-call-title">EMERGENCY CALL #2007</h3>
-                  <span id="intel-threat-badge" class="threat-badge critical">[ CRITICAL THREAT - 88% DISTRESS ]</span>
+                  <span id="intel-status-badge" class="session-badge">[ RECORDING STORED ]</span>
                 </div>
                 <div class="detail-meta-row">
                   <span id="intel-timestamp" class="meta-item">📅 24 Oct 2026, 13:30</span>
@@ -279,8 +287,7 @@
               </div>
 
               <div class="detail-header-actions">
-                <button class="action-btn-small" onclick="alert('Forensic PDF dossier exported.')">[ 📥 Export Report ]</button>
-                <button class="action-btn-small primary-green" onclick="alert('Ground unit dispatched to reported incident location.')">[ 🚨 Dispatch Team ]</button>
+                <a id="download-audio-btn" class="action-btn-small primary-green" download>[ 📥 Download Audio ]</a>
               </div>
             </div>
 
@@ -293,47 +300,36 @@
               <audio id="intel-audio-player" class="retro-audio-player" controls preload="auto"></audio>
             </div>
 
-            <!-- Extracted Critical Intelligence Grid -->
-            <div class="intel-grid">
-              <div class="intel-card">
-                <div class="intel-card-label">📍 REPORTED LOCATION / PLACE</div>
-                <div id="intel-location-val" class="intel-card-val highlight">Sector 4, Cyber Tech Park, Building B-4 (Floor 3)</div>
+            <!-- Recording Metadata Grid -->
+            <div class="session-info-grid">
+              <div class="info-card">
+                <div class="info-card-label">CALL GATEWAY</div>
+                <div id="intel-gateway-val" class="info-card-val">SIP-2007 (Emergency Line)</div>
               </div>
 
-              <div class="intel-card">
-                <div class="intel-card-label">🚨 INCIDENT CLASSIFICATION</div>
-                <div id="intel-category-val" class="intel-card-val">RANSOMWARE EXTORTION (Strain: Vecna-X)</div>
+              <div class="info-card">
+                <div class="info-card-label">AUDIO ENCODING</div>
+                <div id="intel-codec-val" class="info-card-val">WebM / Opus (48kHz Stereo Mix)</div>
               </div>
 
-              <div class="intel-card">
-                <div class="intel-card-label">💵 EXTORTION DEMAND / FINANCIAL LOSS</div>
-                <div id="intel-ransom-val" class="intel-card-val highlight-red">5.0 BITCOIN (~$340,000 USD)</div>
+              <div class="info-card">
+                <div class="info-card-label">RECORDING FILE SIZE</div>
+                <div id="intel-filesize-val" class="info-card-val">-- KB</div>
               </div>
 
-              <div class="intel-card">
-                <div class="intel-card-label">⏳ ESTIMATED DEADLINE</div>
-                <div id="intel-deadline-val" class="intel-card-val">01h:45m Remaining before data wipe</div>
-              </div>
-            </div>
-
-            <!-- AI Speech-to-Text Transcript -->
-            <div class="transcript-section">
-              <div class="transcript-header">
-                <span class="transcript-title">AI SPEECH-TO-TEXT TRANSCRIPTION (DIARIZED)</span>
-                <span class="transcript-model">[ ENGINE: WAV2VEC2 + WHISPER ]</span>
-              </div>
-              <div id="intel-transcript-box" class="transcript-box">
-                <!-- Dynamically populated or mock transcript -->
+              <div class="info-card">
+                <div class="info-card-label">DISPATCH STATUS</div>
+                <div id="intel-outcome-val" class="info-card-val">COMPLETED & ARCHIVED</div>
               </div>
             </div>
 
             <!-- Officer Notes Log -->
             <div class="officer-notes-box">
               <div class="notes-header">
-                <span class="notes-label">OFFICER DISPATCH LOG & NOTES</span>
+                <span class="notes-label">OFFICER DISPATCH LOG & CASE NOTES</span>
                 <button id="save-intel-notes-btn" class="notes-save-btn">[ Save Changes ]</button>
               </div>
-              <textarea id="intel-notes-textarea" class="intel-notes-textarea" placeholder="Update forensic observations..."></textarea>
+              <textarea id="intel-notes-textarea" class="intel-notes-textarea" placeholder="Enter incident observations or dispatch log..."></textarea>
             </div>
           </div>
         </section>
@@ -341,9 +337,40 @@
     </div>
   </div>
 
+  <!-- OFFICER AUTHENTICATION GATE -->
+  <div id="auth-overlay" class="auth-overlay">
+    <div class="auth-window">
+      <div class="auth-window-title">
+        <span>🔐 CERS SECURE ACCESS</span>
+        <span class="auth-window-sub">OFFICER AUTHENTICATION REQUIRED</span>
+      </div>
+      <p class="auth-copy">
+        Enter the officer access token configured on the server
+        (<code>CERS_OFFICER_TOKEN</code>). The token is printed in the server
+        console when one is not configured.
+      </p>
+      <label class="auth-label" for="auth-officer-select">STATION OPERATOR</label>
+      <select id="auth-officer-select" class="officer-dropdown auth-input">
+        <option value="OFFICER_01">Officer Alpha (OFFICER_01)</option>
+        <option value="OFFICER_02">Officer Bravo (OFFICER_02)</option>
+        <option value="OFFICER_03">Officer Charlie (OFFICER_03)</option>
+      </select>
+      <label class="auth-label" for="auth-token-input">ACCESS TOKEN</label>
+      <input
+        id="auth-token-input"
+        class="auth-input"
+        type="password"
+        autocomplete="current-password"
+        placeholder="Paste officer access token"
+      />
+      <button id="auth-login-btn" class="auth-submit-btn">[ AUTHENTICATE ]</button>
+      <div id="auth-error" class="auth-error hidden"></div>
+    </div>
+  </div>
+
   <!-- Audio Elements -->
   <audio id="remote-caller-audio" autoplay playsinline></audio>
 
-  <script src="/officer/app.js"></script>
+  <script type="module" src="/officer/js/main.js"></script>
 </body>
 </html>

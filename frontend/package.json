@@ -1,0 +1,6 @@
+{
+  "name": "cers-frontend",
+  "private": true,
+  "type": "module",
+  "description": "Browser modules for the CERS caller dialer and officer console."
+}

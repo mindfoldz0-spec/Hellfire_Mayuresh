@@ -1,0 +1,66 @@
+/* OFFICER: design tokens, reset, and shared utilities */
+
+/* ========================================================
+   PRODUCT UI STYLEGUIDE: RETRO PIXEL TERMINAL (OFFICER UI)
+   COLOR TOKENS:
+   PRIMARY:      #00FF00 (Electric Terminal Green)
+   SURFACE:      #F0F0F0 / #FFFFFF / #EBE7DF
+   BORDER:       #000000 / #CCCCCC / #333333
+   FOCUS RING:   #00FF00
+   TEXT PRIMARY: #111111 / #333333
+   TEXT SEC:     #666666
+   ======================================================== */
+
+:root {
+  --primary: #00FF00;
+  --primary-hover: #33FF33;
+  --primary-active: #00CC00;
+  --surface: #F0F0F0;
+  --surface-alt: #FFFFFF;
+  --surface-header: #DCD8D0;
+  --border-black: #000000;
+  --border-gray: #CCCCCC;
+  --focus-ring: #00FF00;
+  --text-primary: #111111;
+  --text-secondary: #555555;
+  --bg-canvas: #F5F2EB;
+  --red-alert: #FF1744;
+  --amber-alert: #FFAB00;
+
+  --font-mono: 'VT323', monospace;
+  --font-display: 'VT323', monospace;
+  --font-sans: 'VT323', monospace;
+}
+
+.vt323-regular {
+  font-family: 'VT323', monospace;
+  font-weight: 400;
+  font-style: normal;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: none;
+  image-rendering: pixelated;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 64px 12px;
+}
+
+.hidden {
+  display: none !important;
+}

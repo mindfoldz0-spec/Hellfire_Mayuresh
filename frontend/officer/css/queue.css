@@ -1,0 +1,303 @@
+/* OFFICER: emergency queue cards and claim buttons */
+
+/* QUEUE CARDS (STYLEGUIDE ALERT / CARD STYLE) */
+.queue-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  overflow-y: auto;
+  max-height: 520px;
+}
+
+.queue-card {
+  background: var(--surface-alt);
+  border: 2px solid var(--border-black);
+  box-shadow: 3px 3px 0px var(--border-black);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.queue-card.waiting {
+  border: 2px solid var(--border-black);
+  background: #FAFFF8;
+  position: relative;
+}
+
+.queue-card.waiting::before {
+  content: '!! EMERGENCY ALERT !!';
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  background: var(--primary);
+  border: 1px solid var(--border-black);
+  font-size: 12px;
+  font-weight: bold;
+  padding: 1px 6px;
+}
+
+.queue-card.engaged {
+  opacity: 0.65;
+  background: #EAE6DE;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.call-id-tag {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-badge {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-black);
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.badge-waiting {
+  background: var(--primary);
+  color: var(--border-black);
+}
+
+.badge-ivr {
+  background: var(--amber-alert);
+  color: var(--border-black);
+}
+
+.badge-engaged {
+  background: var(--border-gray);
+  color: var(--text-secondary);
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  border-top: 1px dashed var(--border-gray);
+  border-bottom: 1px dashed var(--border-gray);
+  padding: 4px 0;
+}
+
+/* PRIMARY BUTTON (FROM STYLEGUIDE: [ BUTTON ]) */
+.claim-btn {
+  background: var(--primary);
+  border: 2px solid var(--border-black);
+  color: var(--border-black);
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 3px 3px 0px var(--border-black);
+  transition: all 0.1s ease;
+}
+
+.claim-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--border-black);
+}
+
+.claim-btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--border-black);
+}
+
+.claim-btn:disabled {
+  background: #E0E0E0;
+  border-color: #999999;
+  color: #777777;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.queue-empty {
+  padding: 50px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* From Uiverse.io by andrew-manzyk */
+.loader {
+  --color-one: #ffbf48;
+  --color-two: #be4a1d;
+  --color-three: #ffbf4780;
+  --color-four: #bf4a1d80;
+  --color-five: #ffbf4740;
+  --time-animation: 2s;
+  --size: 0.85;
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  transform: scale(var(--size));
+  box-shadow:
+    0 0 25px 0 var(--color-three),
+    0 20px 50px 0 var(--color-four);
+  animation: colorize calc(var(--time-animation) * 3) ease-in-out infinite;
+  margin-bottom: 16px;
+}
+
+.loader::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border-top: solid 1px var(--color-one);
+  border-bottom: solid 1px var(--color-two);
+  background: linear-gradient(180deg, var(--color-five), var(--color-four));
+  box-shadow:
+    inset 0 10px 10px 0 var(--color-three),
+    inset 0 -10px 10px 0 var(--color-four);
+}
+
+.loader .box {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(
+    180deg,
+    var(--color-one) 30%,
+    var(--color-two) 70%
+  );
+  mask: url(#clipping);
+  -webkit-mask: url(#clipping);
+}
+
+.loader svg {
+  position: absolute;
+}
+
+.loader svg #clipping {
+  filter: contrast(15);
+  animation: roundness calc(var(--time-animation) / 2) linear infinite;
+}
+
+.loader svg #clipping polygon {
+  filter: blur(7px);
+}
+
+.loader svg #clipping polygon:nth-child(1) {
+  transform-origin: 75% 25%;
+  transform: rotate(90deg);
+}
+
+.loader svg #clipping polygon:nth-child(2) {
+  transform-origin: 50% 50%;
+  animation: rotation var(--time-animation) linear infinite reverse;
+}
+
+.loader svg #clipping polygon:nth-child(3) {
+  transform-origin: 50% 60%;
+  animation: rotation var(--time-animation) linear infinite;
+  animation-delay: calc(var(--time-animation) / -3);
+}
+
+.loader svg #clipping polygon:nth-child(4) {
+  transform-origin: 40% 40%;
+  animation: rotation var(--time-animation) linear infinite reverse;
+}
+
+.loader svg #clipping polygon:nth-child(5) {
+  transform-origin: 40% 40%;
+  animation: rotation var(--time-animation) linear infinite reverse;
+  animation-delay: calc(var(--time-animation) / -2);
+}
+
+.loader svg #clipping polygon:nth-child(6) {
+  transform-origin: 60% 40%;
+  animation: rotation var(--time-animation) linear infinite;
+}
+
+.loader svg #clipping polygon:nth-child(7) {
+  transform-origin: 60% 40%;
+  animation: rotation var(--time-animation) linear infinite;
+  animation-delay: calc(var(--time-animation) / -1.5);
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes roundness {
+  0% {
+    filter: contrast(15);
+  }
+  20% {
+    filter: contrast(3);
+  }
+  40% {
+    filter: contrast(3);
+  }
+  60% {
+    filter: contrast(15);
+  }
+  100% {
+    filter: contrast(15);
+  }
+}
+
+@keyframes colorize {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  20% {
+    filter: hue-rotate(-30deg);
+  }
+  40% {
+    filter: hue-rotate(-60deg);
+  }
+  60% {
+    filter: hue-rotate(-90deg);
+  }
+  80% {
+    filter: hue-rotate(-45deg);
+  }
+  100% {
+    filter: hue-rotate(0deg);
+  }
+}
+
+.empty-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 1px;
+  color: var(--text-primary);
+}
+
+.empty-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}

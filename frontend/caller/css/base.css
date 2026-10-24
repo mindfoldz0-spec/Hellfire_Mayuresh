@@ -1,0 +1,92 @@
+/* CALLER: design tokens, reset, and screen switching */
+
+:root {
+  --bg-primary: #0a0d14;
+  --bg-card: rgba(16, 22, 36, 0.75);
+  --bg-key: rgba(255, 255, 255, 0.05);
+  --bg-key-hover: rgba(255, 255, 255, 0.12);
+  --bg-key-active: rgba(0, 229, 255, 0.25);
+  --border-color: rgba(0, 229, 255, 0.18);
+  --border-glow: rgba(0, 229, 255, 0.45);
+  --accent-cyan: #00e5ff;
+  --accent-green: #00e676;
+  --accent-red: #ff1744;
+  --accent-amber: #ffab00;
+  --text-main: #f0f4fc;
+  --text-muted: #8a9bb8;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'VT323', monospace;
+  --font-display: 'VT323', monospace;
+  --font-retro: 'VT323', monospace;
+}
+
+.vt323-regular {
+  font-family: "VT323", monospace;
+  font-weight: 400;
+  font-style: normal;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg-primary);
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(0, 229, 255, 0.12), transparent 45%),
+    radial-gradient(circle at 100% 100%, rgba(255, 23, 68, 0.08), transparent 50%),
+    linear-gradient(180deg, #06090e 0%, #0a0d14 100%);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-x: hidden;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 410px;
+  min-height: 680px;
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-color);
+  border-radius: 36px;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* SCREEN TOGGLE */
+.screen {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+  padding: 28px 24px;
+}
+
+.screen.active {
+  display: flex;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hidden {
+  display: none !important;
+}
