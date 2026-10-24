@@ -173,7 +173,7 @@ def transcribe_audio_sarvam(audio_path: str) -> Optional[str]:
         headers = {"api-subscription-key": api_key}
         with open(audio_path, "rb") as f:
             files = {"file": (os.path.basename(audio_path), f, "audio/wav")}
-            data = {"model": "saaras:v1", "language_code": "en-IN"}
+            data = {"model": "saaras:v3", "language_code": "en-IN"}
             res = requests.post(url, headers=headers, files=files, data=data, timeout=15)
             if res.status_code == 200:
                 transcript = res.json().get("transcript", "").strip()
@@ -187,14 +187,26 @@ def transcribe_audio_sarvam(audio_path: str) -> Optional[str]:
     return None
 
 
-def query_huggingface_emotion(audio_path: str) -> Dict[str, Any]:
-    """Query the deployed Hugging Face Space for acoustic speech emotion recognition."""
-    try:
-        from gradio_client import Client, handle_file
+_hf_client = None
+
+
+def _get_hf_client():
+    global _hf_client
+    if _hf_client is None:
+        from gradio_client import Client
 
         space_id = HF_SPACE_ID or "mindfoldz0/cers-voice-emotion"
-        client = Client(space_id, token=HUGGINGFACE_API_KEY or None)
+        _hf_client = Client(space_id, token=HUGGINGFACE_API_KEY or None)
+    return _hf_client
 
+
+def query_huggingface_emotion(audio_path: str) -> Dict[str, Any]:
+    """Query the deployed Hugging Face Space for acoustic speech emotion recognition."""
+    global _hf_client
+    try:
+        from gradio_client import handle_file
+
+        client = _get_hf_client()
         res = client.predict(
             audio_path=handle_file(audio_path),
             api_name="/_infer",
@@ -208,6 +220,7 @@ def query_huggingface_emotion(audio_path: str) -> Dict[str, Any]:
         return {"success": True, "map": emotions_map, "label": res.get("label", "neutral")}
     except Exception as exc:
         logger.warning("Hugging Face Space query error: %s", exc)
+        _hf_client = None  # Reset client in case of connection drop
         return {"success": False, "map": {}, "label": "neutral"}
 
 

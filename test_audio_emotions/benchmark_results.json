@@ -1,0 +1,82 @@
+[
+  {
+    "id": "distress_panic",
+    "title": "Severe Distress & Panic (Extortion / Sextortion)",
+    "file": "distress_panic.wav",
+    "hf_label": "angry",
+    "hf_map": {
+      "angry": 0.9644,
+      "happy": 0.0177,
+      "neutral": 0.0177,
+      "distress / sad": 0.0001
+    },
+    "triage_score": 85,
+    "urgency_badge": "\ud83d\udea8 VERY VERY URGENT",
+    "category": "ACTIVE EXTORTION / RANSOMWARE",
+    "latency_sec": 11.56
+  },
+  {
+    "id": "anger_furious",
+    "title": "Furious & Aggressive (Wire Fraud / Bank Drained)",
+    "file": "anger_furious.wav",
+    "hf_label": "neutral",
+    "hf_map": {
+      "neutral": 0.4529,
+      "happy": 0.3685,
+      "angry": 0.1724,
+      "distress / sad": 0.0062
+    },
+    "triage_score": 26,
+    "urgency_badge": "\ud83d\udfe2 ROUTINE",
+    "category": "CYBER REPORT",
+    "latency_sec": 6.47
+  },
+  {
+    "id": "calm_neutral",
+    "title": "Calm & Neutral (General Inquiry / Routine Report)",
+    "file": "calm_neutral.wav",
+    "hf_label": "angry",
+    "hf_map": {
+      "angry": 0.7114,
+      "happy": 0.2122,
+      "distress / sad": 0.0666,
+      "neutral": 0.0098
+    },
+    "triage_score": 32,
+    "urgency_badge": "\ud83d\udfe2 ROUTINE",
+    "category": "CYBER REPORT",
+    "latency_sec": 13.98
+  },
+  {
+    "id": "relief_happy",
+    "title": "Relieved & Grateful (Transaction Blocked / Life Saved)",
+    "file": "relief_happy.wav",
+    "hf_label": "angry",
+    "hf_map": {
+      "angry": 0.6529,
+      "happy": 0.2095,
+      "neutral": 0.1375,
+      "distress / sad": 0.0001
+    },
+    "triage_score": 31,
+    "urgency_badge": "\ud83d\udfe2 ROUTINE",
+    "category": "CYBER REPORT",
+    "latency_sec": 4.62
+  },
+  {
+    "id": "life_threat",
+    "title": "Critical Life Threat (Emergency Bleeding / Accident)",
+    "file": "life_threat.wav",
+    "hf_label": "happy",
+    "hf_map": {
+      "happy": 0.5604,
+      "angry": 0.2906,
+      "neutral": 0.149,
+      "distress / sad": 0.0
+    },
+    "triage_score": 95,
+    "urgency_badge": "\ud83d\udea8 VERY VERY URGENT",
+    "category": "ACCIDENT / LIFE THREAT",
+    "latency_sec": 9.44
+  }
+]
