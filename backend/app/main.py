@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager, suppress
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 
 from backend.app import api, pages, recordings, websockets
 from backend.app.config import (
@@ -40,6 +41,7 @@ async def lifespan(_: FastAPI):
     (FRONTEND_DIR / "caller").mkdir(parents=True, exist_ok=True)
     (FRONTEND_DIR / "officer").mkdir(parents=True, exist_ok=True)
     cleanup_task = asyncio.create_task(_cleanup_loop())
+    asyncio.create_task(run_in_threadpool(recordings._sync_from_supabase_sync, True))
     try:
         yield
     finally:

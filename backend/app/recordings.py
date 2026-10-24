@@ -9,11 +9,11 @@ import re
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import aiofiles
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from starlette.concurrency import run_in_threadpool
 
 from backend.app.config import (
@@ -31,6 +31,9 @@ from backend.app.security import require_officer
 from backend.app.state import call_manager
 
 router = APIRouter(prefix="/api/recordings", tags=["recordings"])
+
+
+_last_supabase_sync: float = 0.0
 
 
 def _upload_to_supabase_sync(
@@ -54,6 +57,108 @@ def _upload_to_supabase_sync(
         return None
 
 
+def _upload_json_to_supabase_sync(filename: str, data: Dict[str, Any]) -> bool:
+    if not (SUPABASE_URL and SUPABASE_KEY):
+        return False
+    try:
+        from supabase import create_client
+
+        client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        payload = json.dumps(data, indent=2, ensure_ascii=False).encode("utf-8")
+        client.storage.from_(SUPABASE_BUCKET).upload(
+            file=payload,
+            path=filename,
+            file_options={"content-type": "application/json", "upsert": "true"},
+        )
+        return True
+    except Exception as exc:
+        print(f"[CERS Supabase JSON Upload Error]: {exc}")
+        return False
+
+
+def _sync_from_supabase_sync(force: bool = False) -> None:
+    global _last_supabase_sync
+    if not (SUPABASE_URL and SUPABASE_KEY):
+        return
+    now = time.time()
+    has_local_meta = any(RECORDINGS_DIR.glob("*.json")) if RECORDINGS_DIR.exists() else False
+    if not force and has_local_meta and (now - _last_supabase_sync < 15.0):
+        return
+
+    try:
+        from supabase import create_client
+
+        client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        remote_files = client.storage.from_(SUPABASE_BUCKET).list()
+        RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
+
+        json_stems: set[str] = set()
+        audio_files: dict[str, dict] = {}
+
+        for item in remote_files:
+            name = item.get("name", "")
+            if name.endswith(".json") and META_NAME_RE.fullmatch(name):
+                stem = name[:-5]
+                json_stems.add(stem)
+                local_path = RECORDINGS_DIR / name
+                if not local_path.exists():
+                    try:
+                        content = client.storage.from_(SUPABASE_BUCKET).download(name)
+                        with open(local_path, "wb") as handle:
+                            handle.write(content)
+                    except Exception as err:
+                        print(f"[CERS Supabase Download Error for {name}]: {err}")
+            elif (
+                name.endswith(".webm")
+                or name.endswith(".ogg")
+                or name.endswith(".wav")
+                or name.endswith(".m4a")
+                or name.endswith(".mp4")
+            ) and AUDIO_NAME_RE.fullmatch(name):
+                stem = Path(name).stem
+                audio_files[stem] = item
+
+        # Auto-recover legacy recordings that were uploaded to Supabase before metadata persistence
+        for stem, item in audio_files.items():
+            if stem not in json_stems:
+                meta_name = f"{stem}.json"
+                local_meta = RECORDINGS_DIR / meta_name
+                if not local_meta.exists():
+                    audio_name = item.get("name", "")
+                    public_url = client.storage.from_(SUPABASE_BUCKET).get_public_url(audio_name)
+                    size = item.get("metadata", {}).get("size") or 0
+
+                    ts = int(now)
+                    rec_id = stem.replace("recording_", "").replace("call_", "")
+                    parts = rec_id.split("_")
+                    if parts and parts[0].isdigit():
+                        raw = int(parts[0])
+                        ts = raw // 1000 if raw > 10_000_000_000 else raw
+
+                    synthesized = {
+                        "id": rec_id,
+                        "meta_name": meta_name,
+                        "call_id": None,
+                        "dialed_number": "112",
+                        "officer_id": None,
+                        "filename": audio_name,
+                        "url": public_url,
+                        "timestamp": ts,
+                        "duration": 0.0,
+                        "notes": "Recovered from Supabase Cloud Storage",
+                        "size_bytes": size,
+                        "mime_type": "audio/webm",
+                        "original_filename": audio_name,
+                        "cloud_stored": True,
+                    }
+                    _write_json_sync(local_meta, synthesized)
+                    _upload_json_to_supabase_sync(meta_name, synthesized)
+
+        _last_supabase_sync = now
+    except Exception as exc:
+        print(f"[CERS Supabase Metadata Sync Error]: {exc}")
+
+
 # ---------------------------------------------------------------------------
 # File helpers
 # ---------------------------------------------------------------------------
@@ -74,6 +179,7 @@ def _write_json_sync(path: Path, data: Dict[str, Any]) -> None:
 
 
 def _list_recordings_sync() -> list[Dict[str, Any]]:
+    _sync_from_supabase_sync()
     recordings: list[Dict[str, Any]] = []
     if not RECORDINGS_DIR.exists():
         return recordings
@@ -210,6 +316,7 @@ async def upload_recording(
         "cloud_stored": bool(cloud_url),
     }
     await run_in_threadpool(_write_json_sync, RECORDINGS_DIR / meta_name, metadata)
+    await run_in_threadpool(_upload_json_to_supabase_sync, meta_name, metadata)
     await call_manager.attach_recording(call_id, recording_url, notes)
 
     return JSONResponse(
@@ -237,6 +344,15 @@ async def get_recording(
 ):
     path = _safe_recording_path(filename, AUDIO_NAME_RE)
     if not path.is_file():
+        if SUPABASE_URL and SUPABASE_KEY:
+            try:
+                from supabase import create_client
+
+                client = create_client(SUPABASE_URL, SUPABASE_KEY)
+                public_url = client.storage.from_(SUPABASE_BUCKET).get_public_url(filename)
+                return RedirectResponse(url=public_url)
+            except Exception:
+                pass
         raise HTTPException(status_code=404, detail="Recording not found.")
     media_type = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
     return FileResponse(
@@ -258,6 +374,7 @@ async def update_recording_notes(
         raise HTTPException(status_code=404, detail="Recording not found.")
     try:
         updated = await run_in_threadpool(_update_notes_sync, path, payload.notes)
+        await run_in_threadpool(_upload_json_to_supabase_sync, meta_name, updated)
     except (OSError, ValueError) as exc:
         raise HTTPException(
             status_code=500, detail="Could not update recording notes."
