@@ -11,9 +11,9 @@ import { sendAction } from "./ws.js";
 import { setCallStatus } from "./ui.js";
 
 const SILENCE_THRESHOLD_RMS = 0.015;
-const SILENCE_DURATION_MS = 5000;
-const INITIAL_MAX_WAIT_MS = 14000;
-const MAX_STATEMENT_MS = 25000;
+const SILENCE_DURATION_MS = 1800; // Snappy 1.8s silence detection instead of 5s lag
+const INITIAL_MAX_WAIT_MS = 6000;
+const MAX_STATEMENT_MS = 14000;
 const TARGET_SAMPLE_RATE = 16000;
 
 let pcmProcessorNode = null;

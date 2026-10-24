@@ -405,6 +405,43 @@
   line-height: 1.35;
 }
 
+/* AI Threat Indicators & Tactical SOP */
+.triage-flags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.scam-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: #FFF0F0;
+  color: #CC0000;
+  border: 1px solid #FF9999;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-weight: 600;
+}
+
+.officer-sop-box {
+  background: #F0F7FF;
+  border-left: 3px solid #0066CC;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: #003366;
+  line-height: 1.35;
+  border-radius: 2px;
+}
+
+.officer-sop-title {
+  font-weight: 700;
+  font-size: 11px;
+  color: #004499;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
 /* Acoustic Emotion Meters Grid */
 .emotion-meters-container {
   display: flex;

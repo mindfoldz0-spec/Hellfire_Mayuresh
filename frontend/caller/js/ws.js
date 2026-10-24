@@ -2,6 +2,24 @@
 
 import { state } from "./state.js";
 
+let callerHeartbeatInterval = null;
+
+function startCallerHeartbeat() {
+  stopCallerHeartbeat();
+  callerHeartbeatInterval = setInterval(() => {
+    if (state.ws && state.ws.readyState === WebSocket.OPEN) {
+      state.ws.send(JSON.stringify({ action: "PING" }));
+    }
+  }, 15000);
+}
+
+function stopCallerHeartbeat() {
+  if (callerHeartbeatInterval) {
+    clearInterval(callerHeartbeatInterval);
+    callerHeartbeatInterval = null;
+  }
+}
+
 export function connectCallerSocket(sessionId, { onOpen, onMessage, onClose } = {}) {
   const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   const wsUrl = `${wsProtocol}//${window.location.host}/ws/caller/${encodeURIComponent(sessionId)}`;
@@ -10,6 +28,7 @@ export function connectCallerSocket(sessionId, { onOpen, onMessage, onClose } = 
 
   socket.onopen = () => {
     console.log("[Caller WS] Connected to backend gateway");
+    startCallerHeartbeat();
     onOpen?.();
   };
 
@@ -21,6 +40,9 @@ export function connectCallerSocket(sessionId, { onOpen, onMessage, onClose } = 
       console.error("[Caller WS] Parse error:", e);
       return;
     }
+    if (message.event === "PONG") {
+      return; // Keepalive ack
+    }
     // Serialize async handlers so SDP/ICE messages cannot interleave.
     state.messageChain = state.messageChain
       .then(() => onMessage?.(message))
@@ -28,6 +50,7 @@ export function connectCallerSocket(sessionId, { onOpen, onMessage, onClose } = 
   };
 
   socket.onclose = () => {
+    stopCallerHeartbeat();
     if (state.ws === socket) {
       state.ws = null;
     }
@@ -51,6 +74,7 @@ export function sendAction(payload) {
 }
 
 export function closeSocket() {
+  stopCallerHeartbeat();
   const socket = state.ws;
   state.ws = null;
   if (socket) {
@@ -59,3 +83,4 @@ export function closeSocket() {
     } catch (e) {}
   }
 }
+

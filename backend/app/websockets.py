@@ -21,6 +21,8 @@ def _valid_call_id(value: str) -> bool:
 
 async def _async_triage_call(call_id: str, audio_bytes: bytes, mime_type: str) -> None:
     try:
+        # Immediately set status to WAITING so the call is instantly claimable in <10ms
+        await call_manager.update_call_status(call_id, "WAITING")
         triage_result = await asyncio.to_thread(triage_call_audio, audio_bytes, mime_type)
         print(
             f"[AI] Call {call_id} triaged: Score {triage_result['triage_priority_score']} | "
@@ -50,7 +52,10 @@ async def caller_websocket(websocket: WebSocket, call_id: str):
                 continue
             action = data.get("action")
 
-            if action == "IVR_STARTED":
+            if action == "PING":
+                await websocket.send_json({"event": "PONG"})
+                continue
+            elif action == "IVR_STARTED":
                 await call_manager.update_call_status(call_id, "IVR")
             elif action == "IVR_FINISHED":
                 # Greeting ended, bot is now recording caller's emergency statement
@@ -105,7 +110,10 @@ async def officer_websocket(websocket: WebSocket, officer_id: str):
             action = data.get("action")
             call_id = data.get("call_id")
 
-            if action == "CLAIM_CALL":
+            if action == "PING":
+                await websocket.send_json({"event": "PONG"})
+                continue
+            elif action == "CLAIM_CALL":
                 success, reason = await call_manager.claim_call(call_id, officer_id)
                 await websocket.send_json(
                     {

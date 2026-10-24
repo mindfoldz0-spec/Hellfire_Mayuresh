@@ -172,6 +172,30 @@ export function renderQueue() {
     summaryBox.className = "triage-summary-box";
     summaryBox.textContent = `📋 ${call.incident_summary || "Caller statement triage in progress..."}`;
 
+    // 3b. Scam / Threat Red Flag Indicators
+    let scamFlagsContainer = null;
+    if (Array.isArray(call.scam_indicators) && call.scam_indicators.length > 0) {
+      scamFlagsContainer = document.createElement("div");
+      scamFlagsContainer.className = "triage-flags-container";
+      call.scam_indicators.forEach((indicator) => {
+        const flag = document.createElement("span");
+        flag.className = "scam-pill";
+        flag.textContent = `🚩 ${indicator}`;
+        scamFlagsContainer.appendChild(flag);
+      });
+    }
+
+    // 3c. Officer Tactical SOP Guidance (First 60s)
+    let sopBox = null;
+    if (call.officer_sop && call.officer_sop.trim()) {
+      sopBox = document.createElement("div");
+      sopBox.className = "officer-sop-box";
+      sopBox.innerHTML = `
+        <div class="officer-sop-title">🎯 TACTICAL OFFICER SOP (FIRST 60s)</div>
+        <div>${call.officer_sop}</div>
+      `;
+    }
+
     // 4. Acoustic Speech Emotion Recognition Gauges
     const emotions = call.emotions || {};
     const fearVal = Math.round((Number(emotions.fear) || 0) * 100);
@@ -252,6 +276,8 @@ export function renderQueue() {
     card.appendChild(top);
     card.appendChild(triageHeader);
     card.appendChild(summaryBox);
+    if (scamFlagsContainer) card.appendChild(scamFlagsContainer);
+    if (sopBox) card.appendChild(sopBox);
     card.appendChild(emotionContainer);
     card.appendChild(guardrail);
     card.appendChild(meta);

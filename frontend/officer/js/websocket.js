@@ -19,8 +19,27 @@ export function sendAction(payload) {
   return false;
 }
 
+let heartbeatInterval = null;
+
+function startHeartbeat() {
+  stopHeartbeat();
+  heartbeatInterval = setInterval(() => {
+    if (state.ws && state.ws.readyState === WebSocket.OPEN) {
+      state.ws.send(JSON.stringify({ action: "PING" }));
+    }
+  }, 15000); // 15s keepalive ping prevents Render 55s idle timeout
+}
+
+function stopHeartbeat() {
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval);
+    heartbeatInterval = null;
+  }
+}
+
 export function disconnectWebSocket() {
   state.shouldReconnect = false;
+  stopHeartbeat();
   if (state.reconnectTimer) {
     clearTimeout(state.reconnectTimer);
     state.reconnectTimer = null;
@@ -58,6 +77,7 @@ export function connectWebSocket() {
     if (socket !== state.ws) return;
     setGatewayStatus(`ONLINE (${state.officerId})`, "pulse-green");
     console.log(`[Officer WS] Connected as ${state.officerId}`);
+    startHeartbeat();
   };
 
   socket.onmessage = (event) => {
@@ -69,6 +89,9 @@ export function connectWebSocket() {
       console.error("[Officer WS] Error parsing message:", error);
       return;
     }
+    if (message.event === "PONG") {
+      return; // Keepalive acknowledged
+    }
     // Serialize handlers so SDP/ICE messages cannot interleave.
     state.messageChain = state.messageChain
       .then(() => handleServerEvent(message))
@@ -77,6 +100,7 @@ export function connectWebSocket() {
 
   socket.onclose = () => {
     if (socket !== state.ws) return;
+    stopHeartbeat();
     state.ws = null;
     setGatewayStatus("DISCONNECTED - RETRYING...", "pulse-red");
     if (state.shouldReconnect && generation === state.socketGeneration) {
@@ -86,7 +110,7 @@ export function connectWebSocket() {
         if (state.shouldReconnect && generation === state.socketGeneration) {
           connectWebSocket();
         }
-      }, 2500);
+      }, 1200);
     }
   };
 
@@ -102,6 +126,7 @@ export function reconnectWebSocket() {
 }
 
 async function handleServerEvent(msg) {
+  if (msg.event === "PONG") return;
   console.log("[Officer Received Event]", msg);
 
   if (msg.event === "QUEUE_SNAPSHOT") {

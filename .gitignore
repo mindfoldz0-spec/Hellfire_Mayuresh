@@ -3,6 +3,8 @@
 .env*.local
 .env.*
 !.env.example
+*.pem
+aws_instance_info.json
 
 # Python
 __pycache__/

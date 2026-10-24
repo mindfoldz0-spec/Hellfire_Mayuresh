@@ -84,7 +84,9 @@ export async function handleWebSocketMessage(msg) {
   console.log("[Caller WS Received]", msg);
 
   if (msg.event === "OFFICER_ASSIGNED") {
+    cancelIvr();
     stopHoldMusic();
+    setMicEnabled(true);
     officerCard.classList.remove("hidden");
     officerNameDisplay.textContent = msg.officer_id || "OFFICER ON DUTY";
     setCallStatus("OFFICER CONNECTING...", "status-connecting");

@@ -66,6 +66,9 @@ def test_triage_call_audio_structure():
     assert 1 <= res["triage_priority_score"] <= 100
     assert "urgency_level" in res
     assert "urgency_badge" in res
+    assert "scam_indicators" in res
+    assert isinstance(res["scam_indicators"], list)
+    assert "officer_sop" in res
     assert "emotions" in res
     assert "fear" in res["emotions"]
     assert "distress" in res["emotions"]
@@ -116,3 +119,10 @@ async def test_dynamic_priority_queue_sorting():
     call_ids_in_order = [c["call_id"] for c in snapshot]
 
     assert call_ids_in_order == [c3.call_id, c2.call_id, c1.call_id]
+
+
+def test_analyze_transcript_groq_empty():
+    from backend.app.ai import analyze_transcript_groq
+    assert analyze_transcript_groq("") is None
+    assert analyze_transcript_groq("   ") is None
+    assert analyze_transcript_groq("hi") is None

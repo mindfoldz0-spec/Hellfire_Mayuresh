@@ -96,3 +96,22 @@ HUGGINGFACE_MODEL = os.getenv(
     "HUGGINGFACE_MODEL", "ehcalabres/wav2vec2-lg-xlsr-en-speech-emotion-recognition"
 ).strip()
 HF_SPACE_ID = os.getenv("HF_SPACE_ID", "mindfoldz0/cers-voice-emotion").strip()
+
+# ---------------------------------------------------------------------------
+# Groq Qwen Semantic Triage
+# ---------------------------------------------------------------------------
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
+GROQ_MODEL = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b").strip()
+
+# ---------------------------------------------------------------------------
+# Sarvam AI Speech-to-Text Model
+# ---------------------------------------------------------------------------
+SARVAM_MODEL = os.getenv("SARVAM_MODEL", "saaras:v4").strip()
+
+# ---------------------------------------------------------------------------
+# AWS Dedicated Speech Emotion Recognition
+# ---------------------------------------------------------------------------
+AWS_EMOTION_URL = os.getenv(
+    "AWS_EMOTION_URL", "http://65.2.34.240:8000/predict"
+).strip()
+

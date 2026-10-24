@@ -45,6 +45,8 @@ class CallState:
             "Responsible AI Advisory: Emotion predictions are indicative signals for "
             "call triage prioritization only, not legal evidence of honesty, guilt, or intent."
         )
+        self.scam_indicators: list[str] = []
+        self.officer_sop: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
         started = self.engaged_at or self.created_at
@@ -67,6 +69,8 @@ class CallState:
             "incident_summary": self.incident_summary,
             "transcript": self.transcript,
             "emotions": self.emotions,
+            "scam_indicators": self.scam_indicators,
+            "officer_sop": self.officer_sop,
             "responsible_ai_advisory": self.responsible_ai_advisory,
         }
 
@@ -213,6 +217,8 @@ class CallManager:
             call.incident_summary = triage_data.get("incident_summary", "")
             call.transcript = triage_data.get("transcript", "")
             call.emotions = triage_data.get("emotions", call.emotions)
+            call.scam_indicators = triage_data.get("scam_indicators", [])
+            call.officer_sop = triage_data.get("officer_sop", "")
             call.status = "WAITING"  # Triage finished, now ready for officer dispatch!
             call.responsible_ai_advisory = triage_data.get(
                 "responsible_ai_advisory", call.responsible_ai_advisory

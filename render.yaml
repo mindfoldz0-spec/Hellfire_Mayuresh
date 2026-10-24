@@ -28,5 +28,13 @@ services:
         value: mindfoldz0/cers-voice-emotion
       - key: sarvam_api
         sync: false
+      - key: SARVAM_MODEL
+        value: saaras:v4
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: qwen/qwen3.8-27b
+      - key: AWS_EMOTION_URL
+        value: http://65.2.34.240:8000/predict
 
 
