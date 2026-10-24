@@ -1,29 +1,20 @@
-/* CALLER: design tokens, reset, and screen switching */
+/* CALLER: Clean native dialer styling, white background, emblem watermark */
 
 :root {
-  --bg-primary: #0a0d14;
-  --bg-card: rgba(16, 22, 36, 0.75);
-  --bg-key: rgba(255, 255, 255, 0.05);
-  --bg-key-hover: rgba(255, 255, 255, 0.12);
-  --bg-key-active: rgba(0, 229, 255, 0.25);
-  --border-color: rgba(0, 229, 255, 0.18);
-  --border-glow: rgba(0, 229, 255, 0.45);
-  --accent-cyan: #00e5ff;
-  --accent-green: #00e676;
-  --accent-red: #ff1744;
-  --accent-amber: #ffab00;
-  --text-main: #f0f4fc;
-  --text-muted: #8a9bb8;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'VT323', monospace;
-  --font-display: 'VT323', monospace;
-  --font-retro: 'VT323', monospace;
-}
-
-.vt323-regular {
-  font-family: "VT323", monospace;
-  font-weight: 400;
-  font-style: normal;
+  --bg-primary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --text-primary: #000000;
+  --text-secondary: #8E8E93;
+  --text-muted: #AEAEB2;
+  --ios-green: #34C759;
+  --ios-green-active: #28a745;
+  --ios-red: #FF3B30;
+  --ios-red-active: #d72b22;
+  --ios-blue: #007AFF;
+  --ios-gray-btn: #E5E5EA;
+  --ios-gray-btn-active: #D1D1D6;
+  --font-ios: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", Menlo, Consolas, Monaco, monospace;
 }
 
 * {
@@ -31,62 +22,108 @@
   margin: 0;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
-body {
-  background-color: var(--bg-primary);
-  background-image:
-    radial-gradient(circle at 50% 0%, rgba(0, 229, 255, 0.12), transparent 45%),
-    radial-gradient(circle at 100% 100%, rgba(255, 23, 68, 0.08), transparent 50%),
-    linear-gradient(180deg, #06090e 0%, #0a0d14 100%);
-  color: var(--text-main);
-  font-family: var(--font-sans);
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
+html, body {
+  width: 100%;
+  height: 100%;
+  background-color: #FFFFFF;
+  color: var(--text-primary);
+  font-family: var(--font-ios);
+  margin: 0;
+  padding: 0;
   overflow-x: hidden;
 }
 
-.app-container {
-  width: 100%;
-  max-width: 410px;
-  min-height: 680px;
-  background: var(--bg-card);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--border-color);
-  border-radius: 36px;
-  box-shadow:
-    0 24px 64px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(255, 255, 255, 0.05),
-    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+body {
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
-/* SCREEN TOGGLE */
+/* Dialer & Call Container: Clean White Background with Golden National Emblem Watermark */
+.app-container {
+  width: 100%;
+  max-width: 440px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Watermark Emblem Layer - Perfectly Centered on both Dialer and In-Call screens */
+.app-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/static/emblem.png?v=2');
+  background-repeat: no-repeat;
+  background-position: center 46%;
+  background-size: min(78vw, 320px) auto;
+  opacity: 0.30;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Screens */
 .screen {
   display: none;
   flex-direction: column;
   height: 100%;
-  flex: 1;
-  padding: 28px 24px;
+  width: 100%;
+  padding: 16px 20px 0 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .screen.active {
   display: flex;
-  animation: fadeIn 0.3s ease-out forwards;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Desktop Presentation (Wider screens): Clean centered phone-width layout without fake bezel */
+@media (min-width: 601px) {
+  body {
+    background-color: #F2F2F7;
+    align-items: center;
+    padding: 20px 0;
+  }
+  .app-container {
+    height: 860px;
+    max-height: 96vh;
+    border-radius: 24px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+  }
 }
 
-.hidden {
-  display: none !important;
+/* Mobile Devices: 100% Native Edge-to-Edge Dialer */
+@media (max-width: 600px) {
+  body {
+    background-color: #FFFFFF;
+    padding: 0;
+  }
+  .app-container {
+    max-width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100%;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+  .screen {
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
 }

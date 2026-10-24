@@ -1,119 +1,234 @@
-/* CALLER: in-call banner, target identity, and status pill */
+/* CALLER: iOS In-Call Screen styling matching Screenshot 2 on white emblem background */
 
-/* ========================================================
-   IN-CALL SCREEN STYLES
-   ======================================================== */
-.call-banner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: rgba(255, 23, 68, 0.12);
-  border: 1px solid rgba(255, 23, 68, 0.3);
-  padding: 6px 14px;
-  border-radius: 20px;
-  color: #ff5252;
-  font-family: var(--font-mono);
-  font-size: 15px;
-  letter-spacing: 2px;
-  align-self: center;
-  margin-bottom: 24px;
+#incall-screen {
+  justify-content: space-between;
+  padding-bottom: 24px;
 }
 
-.call-target-info {
+.incall-header-area {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  margin-top: 10px;
 }
 
-.avatar-radar {
-  position: relative;
-  width: 90px;
-  height: 90px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
+.incall-caller-title {
+  font-family: var(--font-ios);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
 }
 
-.avatar-icon {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.2), rgba(0, 229, 255, 0.05));
-  border: 2px solid var(--accent-cyan);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--accent-cyan);
-  box-shadow: 0 0 24px rgba(0, 229, 255, 0.3);
-  z-index: 2;
-}
-
-.radar-wave {
-  position: absolute;
-  border: 1px solid var(--accent-cyan);
-  border-radius: 50%;
-  animation: radarPing 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
-  z-index: 1;
-}
-
-.wave-1 { width: 100%; height: 100%; }
-.wave-2 { width: 100%; height: 100%; animation-delay: 1.2s; }
-
-@keyframes radarPing {
-  0% { transform: scale(0.7); opacity: 0.8; }
-  100% { transform: scale(1.8); opacity: 0; }
-}
-
-.incall-number {
-  font-family: var(--font-mono);
-  font-size: 48px;
-  font-weight: 400;
-  color: #ffffff;
-  letter-spacing: 3px;
+.incall-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
   margin-bottom: 6px;
-  text-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+}
+
+.call-timer {
+  font-family: var(--font-ios);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
 }
 
 .status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 4px 12px;
   border-radius: 20px;
-  font-family: var(--font-mono);
-  font-size: 15px;
-  letter-spacing: 1px;
-  margin-bottom: 12px;
-  transition: all 0.3s ease;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #1C1C1E;
 }
 
-.status-connecting {
-  background: rgba(255, 171, 0, 0.15);
-  border: 1px solid rgba(255, 171, 0, 0.4);
-  color: var(--accent-amber);
-}
-
-.status-active {
-  background: rgba(0, 230, 118, 0.15);
-  border: 1px solid rgba(0, 230, 118, 0.4);
-  color: var(--accent-green);
-}
-
-.status-indicator {
+.status-pill.status-connecting .status-indicator {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: currentColor;
-  animation: pulseAnim 1.2s infinite;
+  background: var(--ios-blue);
+  animation: pulseDot 1.4s infinite;
 }
 
-.call-timer {
-  font-family: var(--font-mono);
-  font-size: 28px;
-  color: var(--accent-cyan);
-  margin-bottom: 20px;
-  letter-spacing: 2px;
+.status-pill.status-active .status-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ios-green);
+}
+
+/* Audio Visualizer & Caption Bar */
+.visualizer-wrapper {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 8px 12px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin: 6px 0;
+}
+
+#caller-visualizer {
+  width: 100%;
+  height: 52px;
+  display: block;
+}
+
+.visualizer-caption {
+  font-size: 11px;
+  font-weight: 600;
+  color: #3A3A3C;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.skip-ivr-btn {
+  background: rgba(0, 122, 255, 0.08);
+  border: 1px dashed var(--ios-blue);
+  color: var(--ios-blue);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 16px;
+  cursor: pointer;
+  align-self: center;
+  margin: 4px 0;
+}
+
+.skip-ivr-btn.hidden {
+  display: none;
+}
+
+/* Officer Connected Card */
+.officer-card {
+  background: rgba(52, 199, 89, 0.1);
+  border: 1px solid rgba(52, 199, 89, 0.3);
+  border-radius: 14px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+}
+
+.officer-card.hidden {
+  display: none;
+}
+
+.officer-avatar {
+  font-size: 24px;
+}
+
+.officer-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.officer-title {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--ios-green);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.officer-name {
+  font-size: 14px;
+  color: #000000;
+  font-weight: 600;
+}
+
+.officer-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* iOS 6-Button Circular Grid (Screenshot 2 Match) */
+.incall-grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+  gap: 16px 12px;
+  margin: 12px 0 20px 0;
+  padding: 0 8px;
+}
+
+.incall-action-btn {
+  background: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #1C1C1E;
+  font-family: var(--font-ios);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+}
+
+.action-circle {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(235, 235, 240, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.incall-action-btn:active .action-circle {
+  background: var(--ios-gray-btn-active);
+  transform: scale(0.94);
+}
+
+.incall-action-btn.active .action-circle {
+  background: #000000;
+  color: #FFFFFF;
+}
+
+/* Bottom Centered Hangup Container */
+.hangup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: auto;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+
+.hangup-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: none;
+  background: var(--ios-red);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(255, 59, 48, 0.4);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  outline: none;
+}
+
+.hangup-btn:active {
+  background: var(--ios-red-active);
+  transform: scale(0.94);
 }

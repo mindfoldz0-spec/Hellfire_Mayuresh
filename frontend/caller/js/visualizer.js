@@ -73,13 +73,12 @@ function drawVisualizer() {
     const width = visualizerCanvas.width;
     const height = visualizerCanvas.height;
 
-    canvasCtx.fillStyle = "rgba(4, 8, 16, 0.3)";
-    canvasCtx.fillRect(0, 0, width, height);
+    canvasCtx.clearRect(0, 0, width, height);
 
     canvasCtx.lineWidth = 2.5;
-    canvasCtx.strokeStyle = state.isMuted ? "#ff1744" : "#00e5ff";
-    canvasCtx.shadowColor = state.isMuted ? "#ff1744" : "#00e5ff";
-    canvasCtx.shadowBlur = 8;
+    canvasCtx.strokeStyle = state.isMuted ? "#FF3B30" : "#007AFF";
+    canvasCtx.shadowColor = state.isMuted ? "rgba(255, 59, 48, 0.4)" : "rgba(0, 122, 255, 0.35)";
+    canvasCtx.shadowBlur = 4;
 
     canvasCtx.beginPath();
     const sliceWidth = (width * 1.0) / bufferLength;
