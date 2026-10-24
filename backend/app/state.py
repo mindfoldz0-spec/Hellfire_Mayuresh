@@ -25,6 +25,26 @@ class CallState:
         self.ended_at: Optional[float] = None
         self.recording_url: Optional[str] = None
         self.notes: str = ""
+        # Fused AI Triage and Speech Emotion Recognition
+        self.triage_priority_score: int = 10
+        self.urgency_level: str = "ROUTINE"
+        self.urgency_badge: str = "🟢 ROUTINE"
+        self.incident_category: str = "PENDING_TRIAGE"
+        self.incident_summary: str = "Awaiting caller statement..."
+        self.transcript: str = ""
+        self.emotions: Dict[str, Any] = {
+            "fear": 0.0,
+            "distress": 0.0,
+            "anger": 0.0,
+            "nervousness": 0.0,
+            "neutral": 1.0,
+            "dominant": "neutral",
+            "vocal_distress_score": 0.0,
+        }
+        self.responsible_ai_advisory: str = (
+            "Responsible AI Advisory: Emotion predictions are indicative signals for "
+            "call triage prioritization only, not legal evidence of honesty, guilt, or intent."
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         started = self.engaged_at or self.created_at
@@ -40,6 +60,14 @@ class CallState:
             "duration": round(max(0.0, finished - started), 1),
             "recording_url": self.recording_url,
             "notes": self.notes,
+            "triage_priority_score": self.triage_priority_score,
+            "urgency_level": self.urgency_level,
+            "urgency_badge": self.urgency_badge,
+            "incident_category": self.incident_category,
+            "incident_summary": self.incident_summary,
+            "transcript": self.transcript,
+            "emotions": self.emotions,
+            "responsible_ai_advisory": self.responsible_ai_advisory,
         }
 
 
@@ -163,7 +191,39 @@ class CallManager:
                 pass
 
     def _snapshot_locked(self) -> list[Dict[str, Any]]:
-        return [c.to_dict() for c in self.calls.values() if c.status != "ENDED"]
+        active = [c for c in self.calls.values() if c.status != "ENDED"]
+        # Sort by urgency/priority score descending, then created_at ascending
+        active.sort(
+            key=lambda c: (
+                -getattr(c, "triage_priority_score", 10),
+                c.created_at,
+            )
+        )
+        return [c.to_dict() for c in active]
+
+    async def update_call_triage(self, call_id: str, triage_data: Dict[str, Any]) -> None:
+        async with self.lock:
+            call = self.calls.get(call_id)
+            if not call:
+                return
+            call.triage_priority_score = triage_data.get("triage_priority_score", 10)
+            call.urgency_level = triage_data.get("urgency_level", "ROUTINE")
+            call.urgency_badge = triage_data.get("urgency_badge", "🟢 ROUTINE")
+            call.incident_category = triage_data.get("incident_category", "CYBER REPORT")
+            call.incident_summary = triage_data.get("incident_summary", "")
+            call.transcript = triage_data.get("transcript", "")
+            call.emotions = triage_data.get("emotions", call.emotions)
+            call.responsible_ai_advisory = triage_data.get(
+                "responsible_ai_advisory", call.responsible_ai_advisory
+            )
+
+        # Broadcast real-time priority update to all officer consoles
+        await self.broadcast_to_officers(
+            {
+                "event": "CALL_TRIAGED",
+                "call": call.to_dict(),
+            }
+        )
 
     # ------------------------------------------------------------------
     # Status and claims

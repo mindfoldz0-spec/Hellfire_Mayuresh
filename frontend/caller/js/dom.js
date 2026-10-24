@@ -25,4 +25,6 @@ export const micIconOff = document.getElementById("mic-icon-off");
 export const hangupBtn = document.getElementById("hangup-btn");
 
 export const ivrAudio = document.getElementById("ivr-audio");
+export const recordedAudio = document.getElementById("recorded-audio");
+export const holdAudio = document.getElementById("hold-audio");
 export const remoteAudio = document.getElementById("remote-audio");

@@ -62,6 +62,8 @@ export function playIVRSequence() {
   skipIvrBtn.onclick = () => finishIvr("skipped");
 }
 
+import { cancelVadAndHold, startVadAndRecording } from "./vad.js";
+
 export function finishIvr(reason) {
   if (state.ivrFinished) return;
   state.ivrFinished = true;
@@ -76,14 +78,17 @@ export function finishIvr(reason) {
   } catch (e) {}
   skipIvrBtn.classList.add("hidden");
 
-  console.log(`[IVR] Sequence finished (${reason}); unmuting mic.`);
+  console.log(`[IVR] Sequence finished (${reason}); unmuting mic & starting VAD.`);
   setMicEnabled(true);
   connectMicToVisualizer();
 
-  setCallStatus("MICROPHONE LIVE - WAITING DISPATCH", "status-connecting");
-  visualizerCaption.textContent = "MICROPHONE ACTIVE - DESCRIBE INCIDENT NOW";
+  setCallStatus("MICROPHONE LIVE - DESCRIBE INCIDENT", "status-connecting");
+  visualizerCaption.textContent = "MICROPHONE ACTIVE - SPEAK YOUR EMERGENCY MESSAGE";
 
   sendAction({ action: "IVR_FINISHED" });
+
+  // Start voice activity detection and statement recording
+  startVadAndRecording(state.localStream);
 }
 
 /** Stop IVR playback without sending IVR_FINISHED (used on hangup). */
@@ -99,4 +104,5 @@ export function cancelIvr() {
     ivrAudio.currentTime = 0;
   } catch (e) {}
   skipIvrBtn.classList.add("hidden");
+  cancelVadAndHold();
 }

@@ -130,19 +130,113 @@ def combine_ivr_sequence(ring_path, speech_path, beep_path, output_path, pause_b
         out_wav.writeframes(beep_frames)
 
 
-def generate_ivr_audio():
-    output_final = BASE_DIR / "frontend" / "static" / "ivr_prompt.wav"
+def synthesize_speech(text: str, output_path: Path, api_key: str, sample_rate=SAMPLE_RATE) -> bool:
+    """Call Sarvam AI TTS to generate audio at requested sample rate."""
+    if not api_key:
+        return False
+    try:
+        response = requests.post(
+            "https://api.sarvam.ai/text-to-speech",
+            headers={
+                "api-subscription-key": api_key,
+                "Content-Type": "application/json",
+            },
+            json={
+                "inputs": [text],
+                "target_language_code": "en-IN",
+                "speaker": "priya",
+                "pitch": 0,
+                "pace": 0.95,
+                "loudness": 1.5,
+                "speech_sample_rate": sample_rate,
+                "enable_preprocessing": True,
+                "model": "bulbul:v3",
+            },
+            timeout=30,
+        )
+        if response.status_code == 200:
+            audios = response.json().get("audios", [])
+            if audios:
+                output_path.write_bytes(base64.b64decode(audios[0]))
+                return True
+        print(f"Sarvam API status {response.status_code}: {response.text}")
+    except Exception as exc:
+        print(f"Sarvam TTS exception: {exc}")
+    return False
+
+
+def generate_hold_music(output_path: Path, sample_rate=SAMPLE_RATE, duration_sec=12.0):
+    """Generate a gentle, calming harmonic hold music loop (Cmaj7 -> Fmaj7 -> Am9)."""
+    num_samples = int(sample_rate * duration_sec)
+    # Define chord progression notes in Hz
+    # Cmaj7 (C4=261.63, E4=329.63, G4=392.00, B4=493.88)
+    # Fmaj7 (F3=174.61, A3=220.00, C4=261.63, E4=329.63)
+    # Am7 (A3=220.00, C4=261.63, E4=329.63, G4=392.00)
+    # Gsus4 (G3=196.00, C4=261.63, D4=293.66, G4=392.00)
+    chords = [
+        [261.63, 329.63, 392.00, 493.88],  # 0-3s
+        [174.61, 220.00, 261.63, 329.63],  # 3-6s
+        [220.00, 261.63, 329.63, 392.00],  # 6-9s
+        [196.00, 261.63, 293.66, 392.00],  # 9-12s
+    ]
+    chord_duration = duration_sec / len(chords)
+
+    with wave.open(str(output_path), "w") as wav_file:
+        wav_file.setnchannels(1)
+        wav_file.setsampwidth(2)
+        wav_file.setframerate(sample_rate)
+
+        data = bytearray()
+        for idx in range(num_samples):
+            t = idx / sample_rate
+            chord_idx = min(int(t / chord_duration), len(chords) - 1)
+            active_chord = chords[chord_idx]
+
+            # Envelope within the chord
+            local_t = t % chord_duration
+            attack = 0.4
+            release = 0.4
+            if local_t < attack:
+                env = local_t / attack
+            elif local_t > chord_duration - release:
+                env = (chord_duration - local_t) / release
+            else:
+                env = 1.0
+
+            # Subtle chorus / vibrato (4Hz)
+            vibrato = 1.0 + 0.008 * math.sin(2 * math.pi * 4.0 * t)
+
+            sample_val = 0.0
+            for note_idx, freq in enumerate(active_chord):
+                weight = 0.35 if note_idx == 0 else 0.22
+                sample_val += weight * math.sin(2 * math.pi * freq * vibrato * t)
+
+            # Master volume
+            sample_val = sample_val * env * 0.45
+            sample_int = max(-32767, min(32767, int(sample_val * 32767)))
+            data.extend(struct.pack("<h", sample_int))
+
+        wav_file.writeframes(data)
+
+
+def generate_all_ivr_prompts():
+    static_dir = BASE_DIR / "frontend" / "static"
     temp_dir = BASE_DIR / "temp"
+    static_dir.mkdir(parents=True, exist_ok=True)
+    temp_dir.mkdir(parents=True, exist_ok=True)
+
+    ivr_final = static_dir / "ivr_prompt.wav"
+    recorded_final = static_dir / "recorded_prompt.wav"
+    hold_music_final = static_dir / "hold_music.wav"
+
     ring_temp = temp_dir / "ring.wav"
     speech_temp = temp_dir / "speech.wav"
+    recorded_temp = temp_dir / "recorded_speech.wav"
     beep_temp = temp_dir / "beep.wav"
-
-    output_final.parent.mkdir(parents=True, exist_ok=True)
-    temp_dir.mkdir(parents=True, exist_ok=True)
 
     api_key = os.getenv("sarvam_api") or os.getenv("SARVAM_API")
 
-    print("Generating telephone ring tone...")
+    print("1. Generating telephone ringback tones...")
     generate_ringback_wav(
         ring_temp,
         freq1=440,
@@ -153,65 +247,41 @@ def generate_ivr_audio():
         sample_rate=SAMPLE_RATE,
     )
 
-    text = (
-        "Welcome to the Cyber Emergency Response System. "
-        "You will be directed to an officer shortly. "
-        "Please describe your situation clearly after the beep."
-    )
-
-    print(f'Calling Sarvam AI TTS API with text: "{text}"')
-
-    success = False
-    if api_key:
-        try:
-            response = requests.post(
-                "https://api.sarvam.ai/text-to-speech",
-                headers={
-                    "api-subscription-key": api_key,
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "inputs": [text],
-                    "target_language_code": "en-IN",
-                    "speaker": "priya",
-                    "pitch": 0,
-                    "pace": 1.0,
-                    "loudness": 1.5,
-                    "speech_sample_rate": SAMPLE_RATE,
-                    "enable_preprocessing": True,
-                    "model": "bulbul:v3",
-                },
-                timeout=30,
-            )
-            if response.status_code == 200:
-                audios = response.json().get("audios", [])
-                if audios:
-                    speech_temp.write_bytes(base64.b64decode(audios[0]))
-                    print("Sarvam TTS speech audio synthesized successfully!")
-                    success = True
-                else:
-                    print("Sarvam API returned 200 but no 'audios' in response.")
-            else:
-                print(f"Sarvam API error: HTTP {response.status_code} - {response.text}")
-        except Exception as exc:
-            print("Failed to call Sarvam TTS:", exc)
-
-    print("Generating 1000Hz sync beep...")
+    print("2. Generating 1000Hz synchronization beep...")
     generate_beep_wav(beep_temp, freq=1000, duration_sec=0.5, sample_rate=SAMPLE_RATE)
 
-    if success:
-        try:
-            combine_ivr_sequence(ring_temp, speech_temp, beep_temp, output_final)
-            print(f"IVR sequence (Ring -> Speech -> Beep) saved to {output_final}")
-            return
-        except ValueError as exc:
-            print(f"Could not combine TTS audio: {exc}")
-            print("Falling back to ring-only prompt.")
+    # 1. Main Greeting
+    greeting_text = (
+        "Welcome to Mayuresh Cybercrime Bureau. "
+        "This is the automated bot. The officer will connect shortly. "
+        "Please speak your message after the beep."
+    )
+    print(f'3. Synthesizing bureau greeting: "{greeting_text}"...')
+    tts_success = synthesize_speech(greeting_text, speech_temp, api_key)
+    if tts_success:
+        combine_ivr_sequence(ring_temp, speech_temp, beep_temp, ivr_final)
+        print(f" -> Successfully saved: {ivr_final}")
+    else:
+        print("TTS failed or no key; generating fallback ring + chime.")
+        combine_ivr_sequence(ring_temp, ring_temp, beep_temp, ivr_final)
 
-    print("Warning: TTS unavailable; combining fallback chime with ring and beep...")
-    combine_ivr_sequence(ring_temp, ring_temp, beep_temp, output_final)
-    print(f"Fallback IVR sequence saved to {output_final}")
+    # 2. Confirmation prompt (when speech finishes / 5s silence)
+    confirmation_text = "Your message has been recorded. The officer is connecting."
+    print(f'4. Synthesizing confirmation prompt: "{confirmation_text}"...')
+    rec_success = synthesize_speech(confirmation_text, recorded_final, api_key)
+    if rec_success:
+        print(f" -> Successfully saved: {recorded_final}")
+    else:
+        # Fallback gentle chime if TTS unavailable
+        generate_beep_wav(recorded_final, freq=587, duration_sec=1.5, sample_rate=SAMPLE_RATE, volume=0.5)
+        print(f" -> Generated fallback chime: {recorded_final}")
+
+    # 3. Looping Hold Music
+    print("5. Generating soothing harmonic hold music loop (12 seconds)...")
+    generate_hold_music(hold_music_final, sample_rate=SAMPLE_RATE, duration_sec=12.0)
+    print(f" -> Successfully saved hold music: {hold_music_final}")
+    print("\nAll IVR prompts and hold music generated successfully!")
 
 
 if __name__ == "__main__":
-    generate_ivr_audio()
+    generate_all_ivr_prompts()

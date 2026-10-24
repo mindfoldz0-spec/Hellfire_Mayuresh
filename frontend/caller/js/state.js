@@ -22,4 +22,10 @@ export const state = {
   ivrFallbackTimer: null,
   isTerminating: false,
   rtcConfigPromise: null,
+  mediaRecorder: null,
+  triageChunks: [],
+  vadActive: false,
+  vadSilenceTimer: null,
+  vadMaxTimer: null,
+  statementSent: false,
 };

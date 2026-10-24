@@ -98,3 +98,12 @@ SUPABASE_KEY = (
     or os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
 )
 SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "recordings").strip()
+
+# ---------------------------------------------------------------------------
+# Hugging Face Speech Emotion Recognition
+# ---------------------------------------------------------------------------
+HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY", "").strip()
+HUGGINGFACE_MODEL = os.getenv(
+    "HUGGINGFACE_MODEL", "ehcalabres/wav2vec2-lg-xlsr-en-speech-emotion-recognition"
+).strip()
+HF_SPACE_ID = os.getenv("HF_SPACE_ID", "mindfoldz0/cers-voice-emotion").strip()

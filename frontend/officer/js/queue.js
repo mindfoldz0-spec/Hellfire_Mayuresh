@@ -33,6 +33,15 @@ export function renderQueue() {
   const activeCalls = Array.from(state.callsMap.values()).filter(
     (call) => call.status !== "ENDED"
   );
+
+  // Dynamic Triage Priority Sorting: highest priority score first, then created_at
+  activeCalls.sort((a, b) => {
+    const prioA = Number(a.triage_priority_score || 10);
+    const prioB = Number(b.triage_priority_score || 10);
+    if (prioB !== prioA) return prioB - prioA;
+    return (a.created_at || 0) - (b.created_at || 0);
+  });
+
   const waitingCalls = activeCalls.filter(
     (call) =>
       call.status === "WAITING" ||
@@ -46,14 +55,20 @@ export function renderQueue() {
   if (standbyPhoneWrapper) {
     if (hasIncoming) {
       standbyPhoneWrapper.classList.add("ringing");
+      const topCall = waitingCalls[0];
+      const isCritical = (topCall.triage_priority_score || 0) >= 85;
+
       if (idleTitle) {
-        idleTitle.textContent = `🚨 INCOMING CALL RINGING (${waitingCalls.length})`;
-        idleTitle.style.color = "var(--red-alert)";
+        if (isCritical) {
+          idleTitle.textContent = `🚨 CRITICAL EMERGENCY CALL (#${callLabel(topCall)})`;
+          idleTitle.style.color = "#FF0033";
+        } else {
+          idleTitle.textContent = `🚨 INCOMING CALL RINGING (${waitingCalls.length})`;
+          idleTitle.style.color = "var(--red-alert)";
+        }
       }
       if (idleSub) {
-        idleSub.textContent = `Emergency Call #${callLabel(
-          waitingCalls[0]
-        )} is in queue! Click [ ACCEPT CALL ] to dispatch.`;
+        idleSub.textContent = `[${topCall.incident_category || "EMERGENCY"}] Score: ${topCall.triage_priority_score || 10}/100. Click [ ACCEPT CALL ] to dispatch.`;
       }
     } else {
       standbyPhoneWrapper.classList.remove("ringing");
@@ -88,8 +103,17 @@ export function renderQueue() {
       call.status === "IVR";
     const busy = Boolean(state.currentActiveCallId);
 
+    const prioScore = Number(call.triage_priority_score || 10);
+    const urgency = call.urgency_level || "ROUTINE";
+
     const card = document.createElement("div");
-    card.className = `queue-card ${isReady ? "waiting" : "engaged"}`;
+    let cardClasses = `queue-card ${isReady ? "waiting" : "engaged"}`;
+    if (prioScore >= 85 || urgency === "VERY_VERY_URGENT") {
+      cardClasses += " urgent-critical";
+    } else if (prioScore >= 65 || urgency === "URGENT") {
+      cardClasses += " urgent-high";
+    }
+    card.className = cardClasses;
     card.dataset.callId = call.call_id;
 
     let statusBadgeClass = "badge-waiting";
@@ -105,6 +129,7 @@ export function renderQueue() {
       statusText = `ENGAGED BY ${call.officer_id}`;
     }
 
+    // 1. Top Bar
     const top = document.createElement("div");
     top.className = "card-top";
 
@@ -122,10 +147,77 @@ export function renderQueue() {
     top.appendChild(idTag);
     top.appendChild(badge);
 
+    // 2. Fused Triage Header & Priority Badge
+    const triageHeader = document.createElement("div");
+    triageHeader.className = "card-triage-header";
+
+    let scoreClass = "score-routine";
+    if (prioScore >= 85) scoreClass = "score-critical";
+    else if (prioScore >= 65) scoreClass = "score-high";
+    else if (prioScore >= 40) scoreClass = "score-elevated";
+
+    const scoreBadge = document.createElement("span");
+    scoreBadge.className = `triage-score-badge ${scoreClass}`;
+    scoreBadge.textContent = `⚡ PRIORITY: ${prioScore}/100 [${urgency.replace(/_/g, " ")}]`;
+
+    const categoryTag = document.createElement("span");
+    categoryTag.className = "triage-category-tag";
+    categoryTag.textContent = call.incident_category || "GENERAL REPORT";
+
+    triageHeader.appendChild(scoreBadge);
+    triageHeader.appendChild(categoryTag);
+
+    // 3. Incident Summary Box
+    const summaryBox = document.createElement("div");
+    summaryBox.className = "triage-summary-box";
+    summaryBox.textContent = `📋 ${call.incident_summary || "Caller statement triage in progress..."}`;
+
+    // 4. Acoustic Speech Emotion Recognition Gauges
+    const emotions = call.emotions || {};
+    const fearVal = Math.round((Number(emotions.fear) || 0) * 100);
+    const distressVal = Math.round((Number(emotions.distress) || 0) * 100);
+    const angerVal = Math.round((Number(emotions.anger) || 0) * 100);
+    const nervVal = Math.round((Number(emotions.nervousness) || 0) * 100);
+
+    const emotionContainer = document.createElement("div");
+    emotionContainer.className = "emotion-meters-container";
+    emotionContainer.innerHTML = `
+      <div class="emotion-meters-title">
+        <span>Acoustic Vocal Emotion Spectrum</span>
+        <span>Dominant: ${(emotions.dominant || "Neutral").toUpperCase()}</span>
+      </div>
+      <div class="emotion-meter-row">
+        <span class="emotion-label">🔴 Fear:</span>
+        <div class="emotion-bar-track"><div class="emotion-bar-fill bar-fear" style="width: ${fearVal}%"></div></div>
+        <span class="emotion-val">${fearVal}%</span>
+      </div>
+      <div class="emotion-meter-row">
+        <span class="emotion-label">🟣 Distress:</span>
+        <div class="emotion-bar-track"><div class="emotion-bar-fill bar-distress" style="width: ${distressVal}%"></div></div>
+        <span class="emotion-val">${distressVal}%</span>
+      </div>
+      <div class="emotion-meter-row">
+        <span class="emotion-label">🟠 Anger:</span>
+        <div class="emotion-bar-track"><div class="emotion-bar-fill bar-anger" style="width: ${angerVal}%"></div></div>
+        <span class="emotion-val">${angerVal}%</span>
+      </div>
+      <div class="emotion-meter-row">
+        <span class="emotion-label">🟡 Jitter:</span>
+        <div class="emotion-bar-track"><div class="emotion-bar-fill bar-nervousness" style="width: ${nervVal}%"></div></div>
+        <span class="emotion-val">${nervVal}%</span>
+      </div>
+    `;
+
+    // 5. Problem Statement Compliance: Responsible AI Guardrail Advisory
+    const guardrail = document.createElement("div");
+    guardrail.className = "responsible-ai-guardrail";
+    guardrail.textContent = "⚖️ Responsible AI Advisory: Emotion predictions are indicative triage signals, not evidence of guilt or intent.";
+
+    // 6. Meta Bar
     const meta = document.createElement("div");
     meta.className = "card-meta";
     const gatewaySpan = document.createElement("span");
-    gatewaySpan.textContent = `CALL GATEWAY: ${call.dialed_number || "2007"}`;
+    gatewaySpan.textContent = `GATEWAY: ${call.dialed_number || "2007"}`;
     const durationSpan = document.createElement("span");
     durationSpan.dataset.durationCallId = call.call_id;
     durationSpan.textContent = `DURATION: ${Math.max(
@@ -135,6 +227,7 @@ export function renderQueue() {
     meta.appendChild(gatewaySpan);
     meta.appendChild(durationSpan);
 
+    // 7. Claim Button
     const claimBtn = document.createElement("button");
     claimBtn.className = "claim-btn";
     claimBtn.disabled = isClaimedByOther || isClaimedByMe || busy;
@@ -144,6 +237,8 @@ export function renderQueue() {
       claimBtn.textContent = "[ ✓ Engaged on Station ]";
     } else if (busy) {
       claimBtn.textContent = "[ FINISH CURRENT CALL FIRST ]";
+    } else if (prioScore >= 85) {
+      claimBtn.textContent = "[ 🚨 DISPATCH URGENT SQUAD ]";
     } else {
       claimBtn.textContent = "[ ACCEPT CALL ]";
     }
@@ -152,6 +247,10 @@ export function renderQueue() {
     }
 
     card.appendChild(top);
+    card.appendChild(triageHeader);
+    card.appendChild(summaryBox);
+    card.appendChild(emotionContainer);
+    card.appendChild(guardrail);
     card.appendChild(meta);
     card.appendChild(claimBtn);
     queueList.appendChild(card);

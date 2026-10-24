@@ -114,6 +114,14 @@ async function handleServerEvent(msg) {
       renderQueue();
       playIncomingPing();
     }
+  } else if (msg.event === "CALL_TRIAGED") {
+    if (msg.call) {
+      state.callsMap.set(msg.call.call_id, msg.call);
+      renderQueue();
+      if ((msg.call.triage_priority_score || 0) >= 85) {
+        playIncomingPing();
+      }
+    }
   } else if (msg.event === "STATUS_CHANGED") {
     if (state.callsMap.has(msg.call_id)) {
       state.callsMap.get(msg.call_id).status = msg.status;

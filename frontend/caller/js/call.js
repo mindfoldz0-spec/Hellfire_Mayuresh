@@ -78,15 +78,19 @@ export async function startEmergencyCall(number) {
   }
 }
 
+import { cancelVadAndHold, stopHoldMusic } from "./vad.js";
+
 export async function handleWebSocketMessage(msg) {
   console.log("[Caller WS Received]", msg);
 
   if (msg.event === "OFFICER_ASSIGNED") {
+    stopHoldMusic();
     officerCard.classList.remove("hidden");
     officerNameDisplay.textContent = msg.officer_id || "OFFICER ON DUTY";
     setCallStatus("OFFICER CONNECTING...", "status-connecting");
     visualizerCaption.textContent = "SYNCHRONIZING WEBRTC AUDIO...";
   } else if (msg.event === "WEBRTC_SIGNAL") {
+    stopHoldMusic();
     const payload = msg.payload || {};
     if (payload.offer) {
       if (!state.peerConnection) {
@@ -140,6 +144,7 @@ export function terminateCall(notifyServer = true) {
     sendAction({ action: "END_CALL" });
   }
 
+  cancelVadAndHold();
   closeSocket();
   cancelIvr();
   closePeerConnection();

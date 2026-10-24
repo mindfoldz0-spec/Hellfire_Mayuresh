@@ -1,11 +1,10 @@
-"""WebSocket endpoints for caller and officer real-time signaling."""
-
-from __future__ import annotations
-
+import asyncio
+import base64
 import uuid
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
+from backend.app.ai import triage_call_audio
 from backend.app.config import OFFICER_ID_RE
 from backend.app.security import websocket_officer
 from backend.app.state import call_manager
@@ -18,6 +17,18 @@ def _valid_call_id(value: str) -> bool:
         return uuid.UUID(value).version == 4
     except (ValueError, AttributeError):
         return False
+
+
+async def _async_triage_call(call_id: str, audio_bytes: bytes, mime_type: str) -> None:
+    try:
+        triage_result = await asyncio.to_thread(triage_call_audio, audio_bytes, mime_type)
+        print(
+            f"[AI] Call {call_id} triaged: Score {triage_result['triage_priority_score']} | "
+            f"{triage_result['urgency_badge']} | {triage_result['incident_category']}"
+        )
+        await call_manager.update_call_triage(call_id, triage_result)
+    except Exception as exc:
+        print(f"[AI] Error in triage for {call_id}: {exc}")
 
 
 @router.websocket("/ws/caller/{call_id}")
@@ -43,6 +54,15 @@ async def caller_websocket(websocket: WebSocket, call_id: str):
                 await call_manager.update_call_status(call_id, "IVR")
             elif action == "IVR_FINISHED":
                 await call_manager.update_call_status(call_id, "WAITING")
+            elif action == "TRIAGE_AUDIO":
+                audio_b64 = data.get("audio", "")
+                mime_type = data.get("mime", "audio/webm")
+                if audio_b64:
+                    try:
+                        audio_bytes = base64.b64decode(audio_b64)
+                        asyncio.create_task(_async_triage_call(call_id, audio_bytes, mime_type))
+                    except Exception as err:
+                        print(f"[WS] Error decoding triage audio for {call_id}: {err}")
             elif action == "WEBRTC_SIGNAL":
                 call = call_manager.get_call(call_id)
                 if call and call.officer_id:
