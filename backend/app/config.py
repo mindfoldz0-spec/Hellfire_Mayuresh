@@ -88,3 +88,13 @@ MAX_RECORDING_BYTES = _env_int("CERS_MAX_RECORDING_BYTES", 25 * 1024 * 1024)
 MAX_ACTIVE_CALLS = _env_int("CERS_MAX_ACTIVE_CALLS", 500)
 CALL_TTL_SECONDS = _env_int("CERS_CALL_TTL_SECONDS", 3600)
 CLEANUP_INTERVAL_SECONDS = _env_int("CERS_CLEANUP_INTERVAL_SECONDS", 300)
+
+# ---------------------------------------------------------------------------
+# Cloud Storage (Supabase)
+# ---------------------------------------------------------------------------
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip()
+SUPABASE_KEY = (
+    os.getenv("SUPABASE_KEY", "").strip()
+    or os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+)
+SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "recordings").strip()

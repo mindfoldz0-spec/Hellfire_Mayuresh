@@ -59,7 +59,7 @@ function recordingLabel(rec) {
 
 function safeRecordingUrl(rec) {
   const url = typeof rec.url === "string" ? rec.url : "";
-  return url.startsWith("/api/recordings/") ? url : "";
+  return url.startsWith("/api/recordings/") || url.startsWith("https://") ? url : "";
 }
 
 export function renderArchiveList(recordings) {

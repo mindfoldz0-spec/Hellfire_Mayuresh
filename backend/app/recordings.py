@@ -22,12 +22,36 @@ from backend.app.config import (
     MAX_RECORDING_BYTES,
     META_NAME_RE,
     RECORDINGS_DIR,
+    SUPABASE_BUCKET,
+    SUPABASE_KEY,
+    SUPABASE_URL,
 )
 from backend.app.models import NotesRequest
 from backend.app.security import require_officer
 from backend.app.state import call_manager
 
 router = APIRouter(prefix="/api/recordings", tags=["recordings"])
+
+
+def _upload_to_supabase_sync(
+    filename: str, path: Path, mime_type: str
+) -> Optional[str]:
+    if not (SUPABASE_URL and SUPABASE_KEY):
+        return None
+    try:
+        from supabase import create_client
+
+        client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        with open(path, "rb") as handle:
+            client.storage.from_(SUPABASE_BUCKET).upload(
+                file=handle,
+                path=filename,
+                file_options={"content-type": mime_type, "upsert": "true"},
+            )
+        return client.storage.from_(SUPABASE_BUCKET).get_public_url(filename)
+    except Exception as exc:
+        print(f"[CERS Supabase Storage Error]: {exc}")
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -65,9 +89,10 @@ def _list_recordings_sync() -> list[Dict[str, Any]]:
             continue
 
         filename = str(recording.get("filename", ""))
-        if AUDIO_NAME_RE.fullmatch(filename):
-            # Normalize old metadata that pointed at the removed /recordings
-            # static mount.
+        existing_url = str(recording.get("url", ""))
+        if existing_url.startswith("https://") or existing_url.startswith("http://"):
+            recording["url"] = existing_url
+        elif AUDIO_NAME_RE.fullmatch(filename):
             recording["url"] = f"/api/recordings/{filename}"
         else:
             recording.pop("url", None)
@@ -161,6 +186,13 @@ async def upload_recording(
         raise
 
     recording_url = f"/api/recordings/{filename}"
+    mime_type = audio_file.content_type or mimetypes.guess_type(filename)[0] or "audio/webm"
+    cloud_url = await run_in_threadpool(
+        _upload_to_supabase_sync, filename, destination, mime_type
+    )
+    if cloud_url:
+        recording_url = cloud_url
+
     metadata: Dict[str, Any] = {
         "id": recording_id,
         "meta_name": meta_name,
@@ -173,8 +205,9 @@ async def upload_recording(
         "duration": round(duration, 1),
         "notes": notes,
         "size_bytes": total_bytes,
-        "mime_type": audio_file.content_type or mimetypes.guess_type(filename)[0],
+        "mime_type": mime_type,
         "original_filename": Path(audio_file.filename or "").name,
+        "cloud_stored": bool(cloud_url),
     }
     await run_in_threadpool(_write_json_sync, RECORDINGS_DIR / meta_name, metadata)
     await call_manager.attach_recording(call_id, recording_url, notes)

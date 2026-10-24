@@ -112,8 +112,8 @@ async def security_headers(request: Request, call_next):
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src https://fonts.gstatic.com; "
         "img-src 'self' data:; "
-        "media-src 'self' blob: data:; "
-        "connect-src 'self' ws: wss:; "
+        "media-src 'self' blob: data: https://*.supabase.co; "
+        "connect-src 'self' ws: wss: https://*.supabase.co; "
         "frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
     )
     if request.url.path.startswith("/api/"):
