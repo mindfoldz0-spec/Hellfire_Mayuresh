@@ -193,7 +193,7 @@ def query_huggingface_emotion(audio_path: str) -> Dict[str, Any]:
         from gradio_client import Client, handle_file
 
         space_id = HF_SPACE_ID or "mindfoldz0/cers-voice-emotion"
-        client = Client(space_id)
+        client = Client(space_id, token=HUGGINGFACE_API_KEY or None)
 
         res = client.predict(
             audio_path=handle_file(audio_path),
