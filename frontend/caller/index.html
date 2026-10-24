@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cyber Emergency Web Dialer | 2007</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/caller/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- DIAL PAD SCREEN -->
+    <main id="dialpad-screen" class="screen active">
+      <header class="app-header">
+        <div class="badge-emergency">
+          <span class="live-dot pulse"></span>
+          CRITICAL DISPATCH
+        </div>
+        <h1 class="system-title">Cyber Emergency</h1>
+        <p class="system-sub">Direct Distress Signaling System</p>
+      </header>
+
+      <div class="display-container">
+        <div class="dialed-number-wrapper">
+          <input type="text" id="phone-number-input" class="dialed-number" value="2007" readonly>
+          <span class="cursor"></span>
+        </div>
+        <div class="dial-hint">Target Dispatch Gateway: <strong>#2007</strong></div>
+      </div>
+
+      <div class="keypad-grid">
+        <button class="key-btn" data-key="1"><span class="digit">1</span><span class="sub">&nbsp;</span></button>
+        <button class="key-btn" data-key="2"><span class="digit">2</span><span class="sub">ABC</span></button>
+        <button class="key-btn" data-key="3"><span class="digit">3</span><span class="sub">DEF</span></button>
+        <button class="key-btn" data-key="4"><span class="digit">4</span><span class="sub">GHI</span></button>
+        <button class="key-btn" data-key="5"><span class="digit">5</span><span class="sub">JKL</span></button>
+        <button class="key-btn" data-key="6"><span class="digit">6</span><span class="sub">MNO</span></button>
+        <button class="key-btn" data-key="7"><span class="digit">7</span><span class="sub">PQRS</span></button>
+        <button class="key-btn" data-key="8"><span class="digit">8</span><span class="sub">TUV</span></button>
+        <button class="key-btn" data-key="9"><span class="digit">9</span><span class="sub">WXYZ</span></button>
+        <button class="key-btn" data-key="*"><span class="digit">*</span><span class="sub">&nbsp;</span></button>
+        <button class="key-btn" data-key="0"><span class="digit">0</span><span class="sub">+</span></button>
+        <button class="key-btn" data-key="#"><span class="digit">#</span><span class="sub">&nbsp;</span></button>
+      </div>
+
+      <div class="actions-row">
+        <button id="clear-btn" class="util-btn" title="Backspace" aria-label="Backspace">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+            <line x1="18" y1="9" x2="12" y2="15"></line>
+            <line x1="12" y1="9" x2="18" y2="15"></line>
+          </svg>
+        </button>
+
+        <button id="call-btn" class="call-btn pulse-glow" aria-label="Start Emergency Call">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.25 1.01l-2.2 2.2z"/>
+          </svg>
+          <span>CALL 2007</span>
+        </button>
+
+        <button id="info-btn" class="util-btn" title="System Info" aria-label="System Info">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </button>
+      </div>
+    </main>
+
+    <!-- IN-CALL ACTIVE SCREEN -->
+    <section id="incall-screen" class="screen">
+      <div class="call-banner">
+        <span class="live-dot pulse-red"></span>
+        <span id="call-type-label">EMERGENCY LINE ACTIVE</span>
+      </div>
+
+      <div class="call-target-info">
+        <div class="avatar-radar">
+          <div class="radar-wave wave-1"></div>
+          <div class="radar-wave wave-2"></div>
+          <div class="avatar-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+        </div>
+        <h2 id="incall-number-title" class="incall-number">2007</h2>
+        <div id="call-status-pill" class="status-pill status-connecting">
+          <span class="status-indicator"></span>
+          <span id="call-status-text">INITIALIZING CALL...</span>
+        </div>
+        <div id="call-timer" class="call-timer">00:00</div>
+      </div>
+
+      <!-- Real-Time Audio Visualizer -->
+      <div class="visualizer-wrapper">
+        <canvas id="caller-visualizer" width="360" height="90"></canvas>
+        <div id="visualizer-label" class="visualizer-caption">AUDIO TRANSMISSION PAUSED (IVR)</div>
+      </div>
+
+      <!-- Officer Engagement Card -->
+      <div id="officer-card" class="officer-card hidden">
+        <div class="officer-avatar">👮</div>
+        <div class="officer-details">
+          <span class="officer-title">CONNECTED RESPONDER</span>
+          <strong id="officer-name-display" class="officer-name">OFFICER-01</strong>
+          <span class="officer-sub">WebRTC P2P Voice Stream Active</span>
+        </div>
+      </div>
+
+      <!-- Call Control Buttons -->
+      <div class="incall-controls">
+        <button id="toggle-mute-btn" class="control-btn" aria-label="Mute Microphone">
+          <div class="control-icon">
+            <svg id="mic-icon-on" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+            <svg id="mic-icon-off" class="hidden" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="1" y1="1" x2="23" y2="23"></line>
+              <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+              <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+          </div>
+          <span id="mute-label">Mute</span>
+        </button>
+
+        <button id="hangup-btn" class="control-btn hangup-btn" aria-label="End Emergency Call">
+          <div class="control-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 010-1.41C3.28 8.91 7.42 7.5 12 7.5s8.72 1.41 11.71 4.17c.39.39.39 1.02 0 1.41l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/>
+            </svg>
+          </div>
+          <span>End Call</span>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Audio Elements -->
+  <audio id="ivr-audio" src="/static/ivr_prompt.wav" preload="auto"></audio>
+  <audio id="remote-audio" autoplay playsinline></audio>
+
+  <script src="/caller/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Emergency Dispatch Command Center | Officer Station</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/officer/style.css">
+</head>
+<body>
+  <!-- TOP COMMAND BAR -->
+  <header class="command-bar">
+    <div class="command-title-group">
+      <div class="system-shield">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="command-title">CERS DISPATCH COMMAND</h1>
+        <p class="command-sub">Cyber Emergency Real-Time Response Center</p>
+      </div>
+    </div>
+
+    <div class="officer-identity-selector">
+      <label for="officer-select" class="selector-label">STATION OPERATOR:</label>
+      <select id="officer-select" class="officer-dropdown">
+        <option value="OFFICER_01">Officer Alpha (OFFICER_01)</option>
+        <option value="OFFICER_02">Officer Bravo (OFFICER_02)</option>
+        <option value="OFFICER_03">Officer Charlie (OFFICER_03)</option>
+      </select>
+    </div>
+
+    <div class="telemetry-group">
+      <div class="telemetry-pill">
+        <span class="live-dot pulse-green"></span>
+        <span id="gateway-status">GATEWAY ONLINE</span>
+      </div>
+      <div id="system-clock" class="telemetry-pill mono">00:00:00 UTC</div>
+      <button id="header-vault-btn" class="header-vault-pill" title="Open Forensic Intelligence Vault">[ 🗄️ FORENSIC VAULT ]</button>
+    </div>
+  </header>
+
+  <!-- MAIN DISPATCH CONSOLE -->
+  <main class="console-layout">
+    <!-- LEFT PANEL: INCOMING QUEUE -->
+    <section class="panel queue-panel">
+      <div class="panel-header">
+        <div class="panel-title-wrapper">
+          <span class="panel-badge" id="queue-count-badge">0</span>
+          <h2 class="panel-title">EMERGENCY CALL QUEUE</h2>
+        </div>
+        <button id="refresh-queue-btn" class="icon-action-btn" title="Refresh Queue">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div id="queue-empty-state" class="queue-empty">
+        <!-- From Uiverse.io by andrew-manzyk --> 
+        <div class="loader">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <defs>
+              <mask id="clipping">
+                <polygon points="0,0 100,0 100,100 0,100" fill="black"></polygon>
+                <polygon points="25,25 75,25 50,75" fill="white"></polygon>
+                <polygon points="50,25 75,75 25,75" fill="white"></polygon>
+                <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+                <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+                <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+                <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+              </mask>
+            </defs>
+          </svg>
+          <div class="box"></div>
+        </div>
+        <p class="empty-title">QUEUE CLEAR</p>
+        <span class="empty-sub">Awaiting incoming caller dial-in (2007)...</span>
+      </div>
+
+      <div id="queue-list" class="queue-cards-list">
+        <!-- Call cards injected dynamically -->
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: ACTIVE DISPATCH STATION -->
+    <section class="panel active-station-panel">
+      <!-- IDLE STATE -->
+      <div id="station-idle" class="station-idle-state">
+        <div id="standby-phone-wrapper" class="standby-phone-wrapper" title="Click to test ringing animation">
+          <svg id="standby-phone-svg" viewBox="0 0 100 100" width="80" height="80">
+            <circle id="standby-circle" cx="50" cy="50" r="48" fill="var(--primary)" stroke="#000000" stroke-width="3" />
+            <g class="handset-group">
+              <path id="standby-handset" fill="#000000" d="M 31.3 15.8 C 34.6 14.5 38.3 16.1 39.8 19.5 L 46.2 33.7 C 47.5 36.8 46.6 40.5 43.8 42.6 L 37.5 47.5 C 41.2 55.8 47.9 62.4 56.1 66.2 L 61.0 59.8 C 63.2 57.1 66.8 56.1 69.9 57.5 L 84.1 63.8 C 87.6 65.3 89.2 69.1 87.9 72.4 L 84.5 81.4 C 83.0 85.3 78.8 87.9 74.1 87.2 C 42.6 83.0 20.7 61.0 16.4 29.6 C 15.8 24.9 18.3 20.7 22.3 19.2 Z" />
+            </g>
+          </svg>
+        </div>
+        <h3 id="idle-title" class="idle-title">STATION STANDBY</h3>
+        <p id="idle-sub" class="idle-sub">Select and "Accept" an incoming emergency call from the queue to start two-way voice dispatch.</p>
+      </div>
+
+      <!-- ACTIVE CALL VIEW -->
+      <div id="station-active" class="station-active-view hidden">
+        <!-- Station Header -->
+        <div class="station-header">
+          <div class="caller-meta">
+            <span class="emergency-badge pulse-red">ENGAGED</span>
+            <div>
+              <h2 id="active-call-id" class="active-caller-title">CALL #2007</h2>
+              <span id="active-call-timer" class="active-timer mono">00:00</span>
+            </div>
+          </div>
+
+          <div class="recording-badge-wrapper">
+            <div id="recording-indicator" class="recording-pill pulse-rec">
+              <span class="rec-dot"></span>
+              <span>AUTO-RECORDER ACTIVE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real-Time Dual Visualizer Console -->
+        <div class="oscilloscope-grid">
+          <!-- Caller Audio Stream -->
+          <div class="scope-card">
+            <div class="scope-header">
+              <span class="scope-label">CALLER INCOMING AUDIO</span>
+              <span class="scope-freq">WEBRTC RX</span>
+            </div>
+            <canvas id="caller-scope" width="480" height="90"></canvas>
+          </div>
+
+          <!-- Officer Mic Stream -->
+          <div class="scope-card">
+            <div class="scope-header">
+              <span class="scope-label">OFFICER MICROPHONE</span>
+              <span class="scope-freq">WEBRTC TX</span>
+            </div>
+            <canvas id="officer-scope" width="480" height="90"></canvas>
+          </div>
+        </div>
+
+        <!-- Incident Notes & Tags -->
+        <div class="notes-section">
+          <div class="notes-header">
+            <label for="incident-notes" class="notes-label">DISPATCH INCIDENT LOG</label>
+            <div class="quick-tags">
+              <button class="tag-btn" data-tag="[RANSOMWARE]">Ransomware ✕</button>
+              <button class="tag-btn" data-tag="[FINANCIAL FRAUD]">Wire Fraud ✕</button>
+              <button class="tag-btn" data-tag="[CREDENTIAL THEFT]">Phishing ✕</button>
+              <button class="tag-btn" data-tag="[CYBER EXTORTION]">Blackmail ✕</button>
+            </div>
+          </div>
+          <textarea id="incident-notes" class="incident-textarea" placeholder="[ Enter incident notes, victim details, or dispatch log here... ]"></textarea>
+        </div>
+
+        <!-- Station Action Bar -->
+        <div class="station-actions">
+          <button id="officer-mute-btn" class="action-btn-secondary">
+            <span id="officer-mute-text">[ Mute Officer Mic ]</span>
+          </button>
+
+          <button id="end-dispatch-btn" class="action-btn-danger">
+            <span>[ DISCONNECT & SAVE RECORDING ]</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- RETRO START MENU POPUP -->
+  <div id="start-menu-popup" class="start-menu-popup hidden">
+    <div class="start-menu-header">
+      <span class="start-menu-title">⚡ CERS-OS v2.4</span>
+      <span class="start-menu-sub">CYBER DISPATCH DESKTOP</span>
+    </div>
+    <div class="start-menu-items">
+      <button id="menu-intel-btn" class="start-item">🗄️ Call Recordings & Intel Vault</button>
+      <button id="menu-refresh-btn" class="start-item">🔄 Re-sync Emergency Queue</button>
+      <button id="menu-about-btn" class="start-item">ℹ️ System Info & Lockout Protocol</button>
+    </div>
+  </div>
+
+  <!-- RETRO BOTTOM TASKBAR -->
+  <footer class="system-taskbar">
+    <div class="taskbar-left">
+      <button id="taskbar-start-btn" class="taskbar-btn start-btn">[ ⚡ CERS-OS ]</button>
+      <button id="open-intel-btn" class="taskbar-btn app-btn active-app">
+        <span>🗄️ CALL RECORDINGS & INTELLIGENCE VAULT</span>
+        <span id="vault-badge-count" class="taskbar-badge">0</span>
+      </button>
+    </div>
+
+    <div class="taskbar-right">
+      <div class="taskbar-status-item">[ 🎙️ AUDIO: READY ]</div>
+      <div class="taskbar-status-item">[ 🔒 LOCKOUT: ACTIVE ]</div>
+      <div id="taskbar-clock" class="taskbar-clock">00:00:00 LOC</div>
+    </div>
+  </footer>
+
+  <!-- CALL RECORDINGS & INTELLIGENCE ANALYSIS MODAL WINDOW -->
+  <div id="intel-modal-backdrop" class="modal-backdrop hidden">
+    <div id="retro-window-modal" class="retro-window-modal">
+      <!-- Window Title Bar -->
+      <div class="window-title-bar">
+        <div class="window-title-group">
+          <span class="window-icon">🗄️</span>
+          <h2 class="window-title-text">CERS-OS: CALL FORENSICS & INTELLIGENCE ANALYSIS</h2>
+        </div>
+        <div class="window-controls">
+          <button id="min-intel-modal-btn" class="win-btn" title="Minimize Window">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+              <rect y="8" width="10" height="2"></rect>
+            </svg>
+          </button>
+          <button id="max-intel-modal-btn" class="win-btn" title="Maximize / Restore Window">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="1" width="8" height="8"></rect>
+            </svg>
+          </button>
+          <button id="close-intel-modal-btn" class="win-btn close-btn" title="Close Window">
+            <svg width="10" height="10" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="square">
+              <line x1="1" y1="1" x2="9" y2="9"></line>
+              <line x1="9" y1="1" x2="1" y2="9"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Window Subheader / Toolbar -->
+      <div class="window-toolbar">
+        <div class="toolbar-hint">
+          <span>AI INTELLIGENCE SUITE (PHASE 2 PREVIEW): Select any recorded emergency call to view automated transcription, acoustic distress breakdown, and extracted key incident data.</span>
+        </div>
+        <button id="refresh-vault-btn" class="toolbar-btn">[ 🔄 Refresh Archive ]</button>
+      </div>
+
+      <!-- Window Content Layout (Split View) -->
+      <div class="window-split-layout">
+        <!-- Sidebar: Recordings Archive List -->
+        <aside class="intel-sidebar">
+          <div class="sidebar-header">
+            <span class="sidebar-title">ARCHIVED CALL SESSIONS (<span id="sidebar-count">0</span>)</span>
+          </div>
+          <div class="sidebar-search">
+            <input type="text" id="intel-search-input" class="retro-search" placeholder="[ Filter by call ID / notes... ]">
+          </div>
+          <div id="modal-recordings-list" class="recordings-tree-list">
+            <div class="empty-list-notice">No recorded calls found. Complete an emergency call to begin forensic analysis.</div>
+          </div>
+        </aside>
+
+        <!-- Main Intel: Forensic Breakdown & Transcript -->
+        <section class="intel-main-view">
+          <div id="intel-empty-prompt" class="intel-empty-prompt">
+            <div class="intel-empty-icon">📁</div>
+            <h3 class="intel-empty-title">NO CALL SELECTED</h3>
+            <p class="intel-empty-sub">Choose a recorded emergency session from the archive list on the left to inspect audio, AI speech transcript, and extracted location intelligence.</p>
+          </div>
+
+          <div id="intel-detail-view" class="intel-detail-view hidden">
+            <!-- Call Header Summary -->
+            <div class="detail-header-card">
+              <div class="detail-header-left">
+                <div class="detail-call-title-row">
+                  <h3 id="intel-call-id" class="detail-call-title">EMERGENCY CALL #2007</h3>
+                  <span id="intel-threat-badge" class="threat-badge critical">[ CRITICAL THREAT - 88% DISTRESS ]</span>
+                </div>
+                <div class="detail-meta-row">
+                  <span id="intel-timestamp" class="meta-item">📅 24 Oct 2026, 13:30</span>
+                  <span id="intel-duration" class="meta-item">⏱️ Duration: 18.4s</span>
+                  <span id="intel-officer" class="meta-item">👮 Handled by: OFFICER_01</span>
+                </div>
+              </div>
+
+              <div class="detail-header-actions">
+                <button class="action-btn-small" onclick="alert('Forensic PDF dossier exported.')">[ 📥 Export Report ]</button>
+                <button class="action-btn-small primary-green" onclick="alert('Ground unit dispatched to reported incident location.')">[ 🚨 Dispatch Team ]</button>
+              </div>
+            </div>
+
+            <!-- Audio Player Station -->
+            <div class="intel-audio-station">
+              <div class="audio-station-header">
+                <span class="station-label">SESSION DUAL-AUDIO PLAYBACK (WEBRTC RECORDING)</span>
+                <span id="intel-audio-filename" class="audio-filename">call_2007.webm</span>
+              </div>
+              <audio id="intel-audio-player" class="retro-audio-player" controls preload="auto"></audio>
+            </div>
+
+            <!-- Extracted Critical Intelligence Grid -->
+            <div class="intel-grid">
+              <div class="intel-card">
+                <div class="intel-card-label">📍 REPORTED LOCATION / PLACE</div>
+                <div id="intel-location-val" class="intel-card-val highlight">Sector 4, Cyber Tech Park, Building B-4 (Floor 3)</div>
+              </div>
+
+              <div class="intel-card">
+                <div class="intel-card-label">🚨 INCIDENT CLASSIFICATION</div>
+                <div id="intel-category-val" class="intel-card-val">RANSOMWARE EXTORTION (Strain: Vecna-X)</div>
+              </div>
+
+              <div class="intel-card">
+                <div class="intel-card-label">💵 EXTORTION DEMAND / FINANCIAL LOSS</div>
+                <div id="intel-ransom-val" class="intel-card-val highlight-red">5.0 BITCOIN (~$340,000 USD)</div>
+              </div>
+
+              <div class="intel-card">
+                <div class="intel-card-label">⏳ ESTIMATED DEADLINE</div>
+                <div id="intel-deadline-val" class="intel-card-val">01h:45m Remaining before data wipe</div>
+              </div>
+            </div>
+
+            <!-- AI Speech-to-Text Transcript -->
+            <div class="transcript-section">
+              <div class="transcript-header">
+                <span class="transcript-title">AI SPEECH-TO-TEXT TRANSCRIPTION (DIARIZED)</span>
+                <span class="transcript-model">[ ENGINE: WAV2VEC2 + WHISPER ]</span>
+              </div>
+              <div id="intel-transcript-box" class="transcript-box">
+                <!-- Dynamically populated or mock transcript -->
+              </div>
+            </div>
+
+            <!-- Officer Notes Log -->
+            <div class="officer-notes-box">
+              <div class="notes-header">
+                <span class="notes-label">OFFICER DISPATCH LOG & NOTES</span>
+                <button id="save-intel-notes-btn" class="notes-save-btn">[ Save Changes ]</button>
+              </div>
+              <textarea id="intel-notes-textarea" class="intel-notes-textarea" placeholder="Update forensic observations..."></textarea>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Elements -->
+  <audio id="remote-caller-audio" autoplay playsinline></audio>
+
+  <script src="/officer/app.js"></script>
+</body>
+</html>

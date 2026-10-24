@@ -1,0 +1,27 @@
+# Environment Variables & Secrets
+.env
+.env*.local
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Dynamic Call Recordings (Keep directory via .gitkeep)
+backend/recordings/*.webm
+backend/recordings/*.json
+!backend/recordings/.gitkeep
+
+# Operating System & Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
