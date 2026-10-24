@@ -14,3 +14,11 @@ services:
         value: cers-officer-token-2026-auth
       - key: CERS_COOKIE_SECURE
         value: "1"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_BUCKET
+        value: recordings
+
+
