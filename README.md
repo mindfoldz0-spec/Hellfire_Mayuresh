@@ -1,4 +1,4 @@
-# ⚡ CERS: Cyber Emergency Response System (Vecnaverse)
+# ⚡ CERS: Cyber Emergency Response System (Hellfire_Mayuresh)
 
 A real-time emergency dispatch console and voice communication platform built for rapid response to cyber threats (ransomware, DDoS, wire fraud, identity hijacking). Features full-duplex WebRTC 2-way voice dispatch, automated AI IVR greeting, multi-officer atomic queue lockout, dual-audio session recording, and an archived call recordings vault.
 
@@ -97,8 +97,8 @@ decoupled and free of circular imports.
 
 ### 2. Installation
 ```bash
-git clone https://github.com/mindfoldz0-spec/Vecnaverse.git
-cd Vecnaverse
+git clone https://github.com/mindfoldz0-spec/Hellfire_Mayuresh.git
+cd Hellfire_Mayuresh
 pip install -r requirements.txt
 ```
 
