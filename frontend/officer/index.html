@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=VT323&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/officer/css/base.css">
-  <link rel="stylesheet" href="/officer/css/command-bar.css">
+  <link rel="stylesheet" href="/officer/css/command-bar.css?v=4">
   <link rel="stylesheet" href="/officer/css/layout.css">
   <link rel="stylesheet" href="/officer/css/queue.css">
   <link rel="stylesheet" href="/officer/css/station.css">
@@ -20,11 +20,14 @@
   <!-- TOP COMMAND BAR -->
   <header class="command-bar">
     <div class="command-title-group">
-      <div class="system-shield">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-        </svg>
-      </div>
+      <img
+        src="/static/logo.png?v=4"
+        alt="Mayuresh Police CERS Logo"
+        class="command-logo"
+        width="50"
+        height="56"
+        style="height: 56px; width: auto; max-width: 62px; object-fit: contain; flex-shrink: 0;"
+      >
       <div>
         <h1 class="command-title">CERS DISPATCH COMMAND</h1>
         <p class="command-sub">Cyber Emergency Real-Time Response Center</p>
@@ -345,9 +348,7 @@
         <span class="auth-window-sub">OFFICER AUTHENTICATION REQUIRED</span>
       </div>
       <p class="auth-copy">
-        Enter the officer access token configured on the server
-        (<code>CERS_OFFICER_TOKEN</code>). The token is printed in the server
-        console when one is not configured.
+        Enter the authorized officer dispatch password to unlock the Cyber Emergency Response console.
       </p>
       <label class="auth-label" for="auth-officer-select">STATION OPERATOR</label>
       <select id="auth-officer-select" class="officer-dropdown auth-input">
@@ -355,14 +356,17 @@
         <option value="OFFICER_02">Officer Bravo (OFFICER_02)</option>
         <option value="OFFICER_03">Officer Charlie (OFFICER_03)</option>
       </select>
-      <label class="auth-label" for="auth-token-input">ACCESS TOKEN</label>
-      <input
-        id="auth-token-input"
-        class="auth-input"
-        type="password"
-        autocomplete="current-password"
-        placeholder="Paste officer access token"
-      />
+      <label class="auth-label" for="auth-token-input">OFFICER PASSWORD</label>
+      <div class="auth-password-wrapper">
+        <input
+          id="auth-token-input"
+          class="auth-input"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Enter officer password"
+        />
+        <button type="button" id="toggle-password-btn" class="toggle-password-btn" title="Show / Hide password">👁️</button>
+      </div>
       <button id="auth-login-btn" class="auth-submit-btn">[ AUTHENTICATE ]</button>
       <div id="auth-error" class="auth-error hidden"></div>
     </div>

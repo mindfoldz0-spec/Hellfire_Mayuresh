@@ -18,16 +18,13 @@
   gap: 12px;
 }
 
-.system-shield {
-  width: 36px;
-  height: 36px;
-  background: var(--primary);
-  border: 2px solid var(--border-black);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--border-black);
-  font-weight: bold;
+.command-logo {
+  height: 56px !important;
+  width: auto !important;
+  max-width: 62px !important;
+  object-fit: contain !important;
+  display: block;
+  flex-shrink: 0;
 }
 
 .command-title {

@@ -10,6 +10,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: CERS_OFFICER_PASSWORD
+        value: mayuresh2007
       - key: CERS_OFFICER_TOKEN
         value: cers-officer-token-2026-auth
       - key: CERS_COOKIE_SECURE

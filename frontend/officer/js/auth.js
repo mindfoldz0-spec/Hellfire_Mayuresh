@@ -52,7 +52,7 @@ export async function authenticate(
 ) {
   if (!token) {
     if (!silent) {
-      authError.textContent = "Enter the officer access token.";
+      authError.textContent = "Enter the officer password.";
       authError.classList.remove("hidden");
     }
     return false;
@@ -140,6 +140,15 @@ export function initAuth() {
     }
   });
 
+  const togglePasswordBtn = document.getElementById("toggle-password-btn");
+  if (togglePasswordBtn) {
+    togglePasswordBtn.addEventListener("click", () => {
+      const isPass = authTokenInput.type === "password";
+      authTokenInput.type = isPass ? "text" : "password";
+      togglePasswordBtn.textContent = isPass ? "🙈" : "👁️";
+    });
+  }
+
   officerSelect.addEventListener("change", async () => {
     const newOfficer = officerSelect.value;
     if (newOfficer === state.officerId) return;
@@ -156,7 +165,7 @@ export function initAuth() {
     if (!ok) {
       officerSelect.value = previous || "";
       authOfficerSelect.value = newOfficer;
-      showAuthOverlay("Re-enter the access token to switch stations.");
+      showAuthOverlay("Re-enter the password to switch stations.");
     }
   });
 

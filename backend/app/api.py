@@ -14,6 +14,7 @@ from backend.app.config import (
     DIALED_NUMBER_RE,
     MAX_ACTIVE_CALLS,
     OFFICER_ID_RE,
+    OFFICER_PASSWORD,
     OFFICER_TOKEN,
     SESSION_TTL_SECONDS,
 )
@@ -39,8 +40,10 @@ async def login(payload: LoginRequest, request: Request, response: Response):
         raise HTTPException(
             status_code=429, detail="Too many login attempts. Try again shortly."
         )
-    if not secrets.compare_digest(payload.token, OFFICER_TOKEN):
-        raise HTTPException(status_code=401, detail="Invalid access token.")
+    valid_password = secrets.compare_digest(payload.token, OFFICER_PASSWORD)
+    valid_token = secrets.compare_digest(payload.token, OFFICER_TOKEN)
+    if not (valid_password or valid_token):
+        raise HTTPException(status_code=401, detail="Invalid officer password.")
     officer_id = payload.officer_id.strip()
     if not OFFICER_ID_RE.fullmatch(officer_id):
         raise HTTPException(status_code=400, detail="Invalid officer ID.")

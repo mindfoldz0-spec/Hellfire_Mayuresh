@@ -28,7 +28,12 @@ def test_officer_api_requires_authentication():
 
 def test_login_rejects_bad_token_and_accepts_good_token():
     with TestClient(app) as client:
-        assert login(client, token="wrong-token").status_code == 401
+        assert login(client, token="wrong-password").status_code == 401
+        # Password mayuresh2007
+        pass_res = login(client, token="mayuresh2007", officer_id="OFFICER_01")
+        assert pass_res.status_code == 200
+        assert pass_res.json()["officer_id"] == "OFFICER_01"
+        # Configured token / alternate
         response = login(client, officer_id="OFFICER_02")
         assert response.status_code == 200
         assert response.json()["officer_id"] == "OFFICER_02"

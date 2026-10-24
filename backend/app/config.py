@@ -55,24 +55,13 @@ def _env_int(name: str, default: int) -> int:
 # ---------------------------------------------------------------------------
 # Officer authentication
 # ---------------------------------------------------------------------------
-OFFICER_TOKEN = os.getenv("CERS_OFFICER_TOKEN", "").strip()
-if OFFICER_TOKEN.lower() in _PLACEHOLDER_TOKENS or len(OFFICER_TOKEN) < 16:
-    if OFFICER_TOKEN:
-        print(
-            "[CERS] CERS_OFFICER_TOKEN is a placeholder or too short; "
-            "generating a random token."
-        )
-    OFFICER_TOKEN = secrets.token_urlsafe(32)
-    print("=" * 72)
-    print(" CERS officer access token (set CERS_OFFICER_TOKEN to make it stable):")
-    print(f"   {OFFICER_TOKEN}")
-    print("=" * 72)
+OFFICER_PASSWORD = os.getenv("CERS_OFFICER_PASSWORD", "mayuresh2007").strip()
+OFFICER_TOKEN = os.getenv("CERS_OFFICER_TOKEN", "").strip() or OFFICER_PASSWORD
 
 SECRET_KEY = os.getenv("CERS_SECRET_KEY", "").strip()
 if not SECRET_KEY:
-    # Stable for a given officer token, so a dev reload does not invalidate
-    # every login. Production deployments should set CERS_SECRET_KEY.
-    SECRET_KEY = hashlib.sha256(f"cers-session:{OFFICER_TOKEN}".encode()).hexdigest()
+    # Stable for a given officer password/token, so a dev reload does not invalidate sessions
+    SECRET_KEY = hashlib.sha256(f"cers-session:{OFFICER_PASSWORD}".encode()).hexdigest()
 
 COOKIE_SECURE = os.getenv("CERS_COOKIE_SECURE", "0").strip() == "1"
 
