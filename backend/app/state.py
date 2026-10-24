@@ -213,6 +213,7 @@ class CallManager:
             call.incident_summary = triage_data.get("incident_summary", "")
             call.transcript = triage_data.get("transcript", "")
             call.emotions = triage_data.get("emotions", call.emotions)
+            call.status = "WAITING"  # Triage finished, now ready for officer dispatch!
             call.responsible_ai_advisory = triage_data.get(
                 "responsible_ai_advisory", call.responsible_ai_advisory
             )
@@ -223,6 +224,9 @@ class CallManager:
                 "event": "CALL_TRIAGED",
                 "call": call.to_dict(),
             }
+        )
+        await self.broadcast_to_officers(
+            {"event": "STATUS_CHANGED", "call_id": call_id, "status": "WAITING"}
         )
 
     # ------------------------------------------------------------------

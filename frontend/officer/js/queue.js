@@ -120,7 +120,7 @@ export function renderQueue() {
     let statusText = "READY FOR DISPATCH";
     if (call.status === "IVR") {
       statusBadgeClass = "badge-ivr";
-      statusText = "IVR ADVISORY";
+      statusText = "BOT TRIAGING STATEMENT";
     } else if (isClaimedByMe) {
       statusBadgeClass = "badge-waiting";
       statusText = "ENGAGED (YOU)";
@@ -230,8 +230,11 @@ export function renderQueue() {
     // 7. Claim Button
     const claimBtn = document.createElement("button");
     claimBtn.className = "claim-btn";
-    claimBtn.disabled = isClaimedByOther || isClaimedByMe || busy;
-    if (isClaimedByOther) {
+    const isBotTriaging = call.status === "IVR" || call.status === "RINGING";
+    claimBtn.disabled = isClaimedByOther || isClaimedByMe || busy || isBotTriaging;
+    if (isBotTriaging) {
+      claimBtn.textContent = "[ ⏳ BOT RECORDING STATEMENT... ]";
+    } else if (isClaimedByOther) {
       claimBtn.textContent = `[ 🔒 Locked by ${call.officer_id} ]`;
     } else if (isClaimedByMe) {
       claimBtn.textContent = "[ ✓ Engaged on Station ]";

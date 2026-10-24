@@ -53,7 +53,8 @@ async def caller_websocket(websocket: WebSocket, call_id: str):
             if action == "IVR_STARTED":
                 await call_manager.update_call_status(call_id, "IVR")
             elif action == "IVR_FINISHED":
-                await call_manager.update_call_status(call_id, "WAITING")
+                # Greeting ended, bot is now recording caller's emergency statement
+                await call_manager.update_call_status(call_id, "IVR")
             elif action == "TRIAGE_AUDIO":
                 audio_b64 = data.get("audio", "")
                 mime_type = data.get("mime", "audio/webm")
