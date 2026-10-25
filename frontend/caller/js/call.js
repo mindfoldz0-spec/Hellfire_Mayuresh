@@ -41,6 +41,8 @@ export async function startEmergencyCall(number) {
     const created = await createCallSession(number);
     state.sessionId = created.call_id;
     state.ivrFinished = false;
+    state.statementSent = false;
+    state.vadActive = false;
 
     // 3. Switch UI to active call.
     dialpadScreen.classList.remove("active");
@@ -178,5 +180,7 @@ export function terminateCall(notifyServer = true) {
 
   state.sessionId = null;
   state.ivrFinished = false;
+  state.statementSent = false;
+  state.vadActive = false;
   state.isTerminating = false;
 }

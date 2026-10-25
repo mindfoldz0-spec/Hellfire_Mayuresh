@@ -15,6 +15,7 @@ export const visualizerCaption = document.getElementById("visualizer-label");
 export const visualizerCanvas = document.getElementById("caller-visualizer");
 export const canvasCtx = visualizerCanvas.getContext("2d");
 export const skipIvrBtn = document.getElementById("skip-ivr-btn");
+export const fastSubmitBtn = document.getElementById("fast-submit-btn");
 
 export const officerCard = document.getElementById("officer-card");
 export const officerNameDisplay = document.getElementById("officer-name-display");

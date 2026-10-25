@@ -109,6 +109,31 @@
   display: none;
 }
 
+.fast-submit-btn {
+  background: #007AFF;
+  color: #FFFFFF;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  align-self: center;
+  margin: 6px 0;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.35);
+  letter-spacing: 0.5px;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.fast-submit-btn:active {
+  transform: scale(0.96);
+  background: #0056b3;
+}
+
+.fast-submit-btn.hidden {
+  display: none;
+}
+
 /* Officer Connected Card */
 .officer-card {
   background: rgba(52, 199, 89, 0.1);

@@ -6,29 +6,36 @@
  */
 
 import { state } from "./state.js";
-import { recordedAudio, holdAudio, visualizerCaption } from "./dom.js";
+import { recordedAudio, holdAudio, visualizerCaption, fastSubmitBtn } from "./dom.js";
 import { sendAction } from "./ws.js";
 import { setCallStatus } from "./ui.js";
 
 const SILENCE_THRESHOLD_RMS = 0.015;
-const SILENCE_DURATION_MS = 3000; // 3.0s silence detection
-const INITIAL_MAX_WAIT_MS = 6000;
-const MAX_STATEMENT_MS = 14000;
+const SILENCE_DURATION_MS = 2500; // 2.5s silence detection after speech
+const INITIAL_MAX_WAIT_MS = 5000;  // 5.0s wait if user stays completely silent
+const MAX_STATEMENT_MS = 10000;    // 10.0s hard maximum statement cap (guaranteed auto-connect)
 const TARGET_SAMPLE_RATE = 16000;
 
 let pcmProcessorNode = null;
 let pcmSourceNode = null;
+let vadInterval = null;
 let pcmBuffers = [];
 
 export function startVadAndRecording(stream) {
-  if (!stream || state.vadActive || state.statementSent) return;
+  if (!stream) {
+    console.warn("[VAD] Cannot start: microphone stream is missing.");
+    return;
+  }
 
+  // Always reset and start fresh
+  cancelVadAndHold();
   state.vadActive = true;
+  state.statementSent = false;
   pcmBuffers = [];
   let hasSpoken = false;
   let silenceStartTime = null;
 
-  // 1. Setup AudioContext
+  // 1. Setup AudioContext safely
   let audioCtx = state.audioCtx;
   if (!audioCtx || audioCtx.state === "closed") {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -38,12 +45,30 @@ export function startVadAndRecording(stream) {
     audioCtx.resume().catch(() => {});
   }
 
-  // 2. Setup PCM Recorder using ScriptProcessorNode (captures raw PCM without codec artifacts)
-  try {
-    pcmSourceNode = audioCtx.createMediaStreamSource(stream);
-    // 4096 buffer size, 1 input channel (mono), 1 output channel
-    pcmProcessorNode = audioCtx.createScriptProcessor(4096, 1, 1);
+  // 2. Show Fast Submit button so caller can immediately skip waiting
+  if (fastSubmitBtn) {
+    fastSubmitBtn.classList.remove("hidden");
+    fastSubmitBtn.onclick = () => {
+      console.log("[VAD] Caller triggered manual fast submission.");
+      finalizeStatement(audioCtx?.sampleRate || 16000);
+    };
+  }
 
+  // 3. Setup PCM Recorder & Analyser safely (single source node to avoid Android crashes)
+  let analyser = state.analyserNode;
+  try {
+    if (!pcmSourceNode) {
+      pcmSourceNode = state.micVisualizerSource || audioCtx.createMediaStreamSource(stream);
+    }
+
+    if (!analyser) {
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.3;
+      pcmSourceNode.connect(analyser);
+    }
+
+    pcmProcessorNode = audioCtx.createScriptProcessor(4096, 1, 1);
     pcmProcessorNode.onaudioprocess = (event) => {
       if (!state.vadActive) return;
       const input = event.inputBuffer.getChannelData(0);
@@ -55,30 +80,31 @@ export function startVadAndRecording(stream) {
     pcmProcessorNode.connect(audioCtx.destination);
     console.log(`[VAD] Native PCM recording active at ${audioCtx.sampleRate}Hz.`);
   } catch (err) {
-    console.error("[VAD] Error setting up PCM processor:", err);
+    console.error("[VAD] Error setting up audio processor graph:", err);
   }
 
-  // 3. Setup VAD Analyser for Real-Time RMS Volume & Silence Detection
-  const analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 512;
-  const analyserSource = audioCtx.createMediaStreamSource(stream);
-  analyserSource.connect(analyser);
-
-  const buffer = new Float32Array(analyser.fftSize);
   visualizerCaption.textContent = "LISTENING... DESCRIBE YOUR EMERGENCY MESSAGE NOW";
 
-  const vadInterval = setInterval(() => {
+  const buffer = new Float32Array(analyser ? analyser.fftSize : 512);
+
+  vadInterval = setInterval(() => {
     if (!state.vadActive) {
-      clearInterval(vadInterval);
+      if (vadInterval) clearInterval(vadInterval);
       return;
     }
 
-    analyser.getFloatTimeDomainData(buffer);
-    let sum = 0;
-    for (let i = 0; i < buffer.length; i++) {
-      sum += buffer[i] * buffer[i];
+    let rms = 0;
+    if (analyser) {
+      try {
+        analyser.getFloatTimeDomainData(buffer);
+        let sum = 0;
+        for (let i = 0; i < buffer.length; i++) {
+          sum += buffer[i] * buffer[i];
+        }
+        rms = Math.sqrt(sum / buffer.length);
+      } catch (e) {}
     }
-    const rms = Math.sqrt(sum / buffer.length);
+
     const now = Date.now();
 
     if (rms > SILENCE_THRESHOLD_RMS) {
@@ -101,8 +127,7 @@ export function startVadAndRecording(stream) {
           visualizerCaption.textContent = `SILENCE DETECTED (${remainingSec}s UNTIL CONNECTING)...`;
 
           if (silenceElapsed >= SILENCE_DURATION_MS) {
-            console.log("[VAD] 5 seconds of silence detected. Concluding statement.");
-            clearInterval(vadInterval);
+            console.log("[VAD] Silence detected after speech. Concluding statement.");
             finalizeStatement(audioCtx.sampleRate);
             return;
           }
@@ -111,20 +136,18 @@ export function startVadAndRecording(stream) {
     }
   }, 100);
 
-  // Safety timer if caller says nothing for 14s
+  // Safety timer 1: if caller says nothing at all for 5s, conclude
   state.vadSilenceTimer = setTimeout(() => {
     if (state.vadActive && !hasSpoken) {
-      console.log("[VAD] Initial silence timeout reached.");
-      clearInterval(vadInterval);
+      console.log("[VAD] Initial silence timeout reached (5s). Concluding.");
       finalizeStatement(audioCtx.sampleRate);
     }
   }, INITIAL_MAX_WAIT_MS);
 
-  // Hard maximum statement duration (25s)
+  // Safety timer 2: Hard maximum statement duration (10s) - GUARANTEED finalize
   state.vadMaxTimer = setTimeout(() => {
     if (state.vadActive) {
-      console.log("[VAD] Maximum statement length reached (25s).");
-      clearInterval(vadInterval);
+      console.log("[VAD] Hard maximum statement length reached (10s). Concluding.");
       finalizeStatement(audioCtx.sampleRate);
     }
   }, MAX_STATEMENT_MS);
@@ -135,10 +158,18 @@ function finalizeStatement(originalSampleRate) {
   state.vadActive = false;
   state.statementSent = true;
 
+  if (vadInterval) {
+    clearInterval(vadInterval);
+    vadInterval = null;
+  }
   clearTimeout(state.vadSilenceTimer);
   clearTimeout(state.vadMaxTimer);
   state.vadSilenceTimer = null;
   state.vadMaxTimer = null;
+
+  if (fastSubmitBtn) {
+    fastSubmitBtn.classList.add("hidden");
+  }
 
   // Disconnect PCM processor
   if (pcmProcessorNode) {
@@ -332,10 +363,19 @@ async function transmitTriageAudio(wavBlob) {
 
 export function cancelVadAndHold() {
   state.vadActive = false;
+  state.statementSent = false;
+  if (vadInterval) {
+    clearInterval(vadInterval);
+    vadInterval = null;
+  }
   clearTimeout(state.vadSilenceTimer);
   clearTimeout(state.vadMaxTimer);
   state.vadSilenceTimer = null;
   state.vadMaxTimer = null;
+
+  if (fastSubmitBtn) {
+    fastSubmitBtn.classList.add("hidden");
+  }
 
   if (pcmProcessorNode) {
     try {
@@ -344,6 +384,7 @@ export function cancelVadAndHold() {
     } catch (e) {}
     pcmProcessorNode = null;
   }
+  pcmSourceNode = null;
   pcmBuffers = [];
   stopHoldMusic();
 }
