@@ -474,8 +474,10 @@ def triage_call_audio(audio_bytes: bytes, mime_type: str = "audio/wav") -> Dict[
             groq_prio = int(groq_result.get("priority_score", int(round(incident_severity * 100))))
             incident_category = groq_result.get("incident_category") or incident_category
             incident_summary = groq_result.get("incident_summary") or incident_summary
-            scam_indicators = groq_result.get("scam_indicators") or []
-            officer_sop = groq_result.get("officer_sop") or ""
+            raw_scam = groq_result.get("scam_indicators")
+            scam_indicators = raw_scam if isinstance(raw_scam, list) else ([str(raw_scam)] if raw_scam else [])
+            raw_sop = groq_result.get("officer_sop")
+            officer_sop = raw_sop if isinstance(raw_sop, list) else ([str(raw_sop)] if raw_sop else [])
             # Normalize to 0.1-1.0 for emotion synthesis
             incident_severity = max(0.1, min(1.0, groq_prio / 100.0))
 

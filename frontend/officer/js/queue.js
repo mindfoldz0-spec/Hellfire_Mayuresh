@@ -91,198 +91,226 @@ export function renderQueue() {
   queueEmptyState.style.display = "none";
 
   activeCalls.forEach((call) => {
-    const isClaimedByMe =
-      call.officer_id === state.officerId && call.status === "ENGAGED";
-    const isClaimedByOther =
-      Boolean(call.officer_id) &&
-      call.officer_id !== state.officerId &&
-      call.status === "ENGAGED";
-    const isReady =
-      call.status === "WAITING" ||
-      call.status === "RINGING" ||
-      call.status === "IVR";
-    const busy = Boolean(state.currentActiveCallId);
+    try {
+      const isClaimedByMe =
+        call.officer_id === state.officerId && call.status === "ENGAGED";
+      const isClaimedByOther =
+        Boolean(call.officer_id) &&
+        call.officer_id !== state.officerId &&
+        call.status === "ENGAGED";
+      const isReady =
+        call.status === "WAITING" ||
+        call.status === "RINGING" ||
+        call.status === "IVR";
+      const busy = Boolean(state.currentActiveCallId);
 
-    const prioScore = Number(call.triage_priority_score || 10);
-    const urgency = call.urgency_level || "ROUTINE";
+      const prioScore = Number(call.triage_priority_score || 10);
+      const urgency = String(call.urgency_level || "ROUTINE");
 
-    const card = document.createElement("div");
-    let cardClasses = `queue-card ${isReady ? "waiting" : "engaged"}`;
-    if (prioScore >= 85 || urgency === "VERY_VERY_URGENT") {
-      cardClasses += " urgent-critical";
-    } else if (prioScore >= 65 || urgency === "URGENT") {
-      cardClasses += " urgent-high";
-    }
-    card.className = cardClasses;
-    card.dataset.callId = call.call_id;
+      const card = document.createElement("div");
+      let cardClasses = `queue-card ${isReady ? "waiting" : "engaged"}`;
+      if (prioScore >= 85 || urgency === "VERY_VERY_URGENT") {
+        cardClasses += " urgent-critical";
+      } else if (prioScore >= 65 || urgency === "URGENT") {
+        cardClasses += " urgent-high";
+      }
+      card.className = cardClasses;
+      card.dataset.callId = call.call_id;
 
-    let statusBadgeClass = "badge-waiting";
-    let statusText = "READY FOR DISPATCH";
-    if (call.status === "IVR") {
-      statusBadgeClass = "badge-ivr";
-      statusText = "BOT TRIAGING STATEMENT";
-    } else if (isClaimedByMe) {
-      statusBadgeClass = "badge-waiting";
-      statusText = "ENGAGED (YOU)";
-    } else if (isClaimedByOther) {
-      statusBadgeClass = "badge-engaged";
-      statusText = `ENGAGED BY ${call.officer_id}`;
-    }
+      let statusBadgeClass = "badge-waiting";
+      let statusText = "READY FOR DISPATCH";
+      if (call.status === "IVR") {
+        statusBadgeClass = "badge-ivr";
+        statusText = "BOT TRIAGING STATEMENT";
+      } else if (isClaimedByMe) {
+        statusBadgeClass = "badge-waiting";
+        statusText = "ENGAGED (YOU)";
+      } else if (isClaimedByOther) {
+        statusBadgeClass = "badge-engaged";
+        statusText = `ENGAGED BY ${call.officer_id}`;
+      }
 
-    // 1. Top Bar
-    const top = document.createElement("div");
-    top.className = "card-top";
+      // 1. Top Bar
+      const top = document.createElement("div");
+      top.className = "card-top";
 
-    const idTag = document.createElement("div");
-    idTag.className = "call-id-tag";
-    idTag.appendChild(createPhoneBadge(isReady));
-    const idSpan = document.createElement("span");
-    idSpan.textContent = `#${callLabel(call)}`;
-    idTag.appendChild(idSpan);
+      const idTag = document.createElement("div");
+      idTag.className = "call-id-tag";
+      idTag.appendChild(createPhoneBadge(isReady));
+      const idSpan = document.createElement("span");
+      idSpan.textContent = `#${callLabel(call)}`;
+      idTag.appendChild(idSpan);
 
-    const badge = document.createElement("span");
-    badge.className = `status-badge ${statusBadgeClass}`;
-    badge.textContent = statusText;
+      const badge = document.createElement("span");
+      badge.className = `status-badge ${statusBadgeClass}`;
+      badge.textContent = statusText;
 
-    top.appendChild(idTag);
-    top.appendChild(badge);
+      top.appendChild(idTag);
+      top.appendChild(badge);
 
-    // 2. Fused Triage Header & Priority Badge
-    const triageHeader = document.createElement("div");
-    triageHeader.className = "card-triage-header";
+      // 2. Fused Triage Header & Priority Badge
+      const triageHeader = document.createElement("div");
+      triageHeader.className = "card-triage-header";
 
-    let scoreClass = "score-routine";
-    if (prioScore >= 85) scoreClass = "score-critical";
-    else if (prioScore >= 65) scoreClass = "score-high";
-    else if (prioScore >= 40) scoreClass = "score-elevated";
+      let scoreClass = "score-routine";
+      if (prioScore >= 85) scoreClass = "score-critical";
+      else if (prioScore >= 65) scoreClass = "score-high";
+      else if (prioScore >= 40) scoreClass = "score-elevated";
 
-    const scoreBadge = document.createElement("span");
-    scoreBadge.className = `triage-score-badge ${scoreClass}`;
-    scoreBadge.textContent = `⚡ PRIORITY: ${prioScore}/100 [${urgency.replace(/_/g, " ")}]`;
+      const scoreBadge = document.createElement("span");
+      scoreBadge.className = `triage-score-badge ${scoreClass}`;
+      scoreBadge.textContent = `⚡ PRIORITY: ${prioScore}/100 [${urgency.replace(/_/g, " ")}]`;
 
-    const categoryTag = document.createElement("span");
-    categoryTag.className = "triage-category-tag";
-    categoryTag.textContent = call.incident_category || "GENERAL REPORT";
+      const categoryTag = document.createElement("span");
+      categoryTag.className = "triage-category-tag";
+      categoryTag.textContent = call.incident_category || "GENERAL REPORT";
 
-    triageHeader.appendChild(scoreBadge);
-    triageHeader.appendChild(categoryTag);
+      triageHeader.appendChild(scoreBadge);
+      triageHeader.appendChild(categoryTag);
 
-    // 3. Incident Summary Box
-    const summaryBox = document.createElement("div");
-    summaryBox.className = "triage-summary-box";
-    summaryBox.textContent = `📋 ${call.incident_summary || "Caller statement triage in progress..."}`;
+      // 3. Incident Summary Box
+      const summaryBox = document.createElement("div");
+      summaryBox.className = "triage-summary-box";
+      let summaryText = "Caller statement triage in progress...";
+      if (typeof call.incident_summary === "string" && call.incident_summary.trim()) {
+        summaryText = call.incident_summary.trim();
+      } else if (Array.isArray(call.incident_summary) && call.incident_summary.length > 0) {
+        summaryText = call.incident_summary.join(" ");
+      }
+      summaryBox.textContent = `📋 ${summaryText}`;
 
-    // 3b. Scam / Threat Red Flag Indicators
-    let scamFlagsContainer = null;
-    if (Array.isArray(call.scam_indicators) && call.scam_indicators.length > 0) {
-      scamFlagsContainer = document.createElement("div");
-      scamFlagsContainer.className = "triage-flags-container";
-      call.scam_indicators.forEach((indicator) => {
-        const flag = document.createElement("span");
-        flag.className = "scam-pill";
-        flag.textContent = `🚩 ${indicator}`;
-        scamFlagsContainer.appendChild(flag);
-      });
-    }
+      // 3b. Scam / Threat Red Flag Indicators
+      let scamFlagsContainer = null;
+      let indicators = [];
+      if (Array.isArray(call.scam_indicators)) {
+        indicators = call.scam_indicators;
+      } else if (typeof call.scam_indicators === "string" && call.scam_indicators.trim()) {
+        indicators = [call.scam_indicators.trim()];
+      }
+      if (indicators.length > 0) {
+        scamFlagsContainer = document.createElement("div");
+        scamFlagsContainer.className = "triage-flags-container";
+        indicators.forEach((indicator) => {
+          if (!indicator) return;
+          const flag = document.createElement("span");
+          flag.className = "scam-pill";
+          flag.textContent = `🚩 ${indicator}`;
+          scamFlagsContainer.appendChild(flag);
+        });
+      }
 
-    // 3c. Officer Tactical SOP Guidance (First 60s)
-    let sopBox = null;
-    if (call.officer_sop && call.officer_sop.trim()) {
-      sopBox = document.createElement("div");
-      sopBox.className = "officer-sop-box";
-      sopBox.innerHTML = `
-        <div class="officer-sop-title">🎯 TACTICAL OFFICER SOP (FIRST 60s)</div>
-        <div>${call.officer_sop}</div>
+      // 3c. Officer Tactical SOP Guidance (First 60s)
+      let sopBox = null;
+      let formattedSop = "";
+      if (Array.isArray(call.officer_sop) && call.officer_sop.length > 0) {
+        formattedSop = call.officer_sop.map((item) => `• ${item}`).join("<br>");
+      } else if (typeof call.officer_sop === "string" && call.officer_sop.trim()) {
+        formattedSop = call.officer_sop.trim().replace(/\n/g, "<br>");
+      }
+      if (formattedSop) {
+        sopBox = document.createElement("div");
+        sopBox.className = "officer-sop-box";
+        sopBox.innerHTML = `
+          <div class="officer-sop-title">🎯 TACTICAL OFFICER SOP (FIRST 60s)</div>
+          <div>${formattedSop}</div>
+        `;
+      }
+
+      // 4. Acoustic Speech Emotion Recognition Gauges
+      const emotions = call.emotions || {};
+      function parseEmotionPct(val) {
+        const n = Number(val) || 0;
+        return n <= 1 ? Math.min(100, Math.round(n * 100)) : Math.min(100, Math.round(n));
+      }
+      const fearVal = parseEmotionPct(emotions.fear);
+      const distressVal = parseEmotionPct(emotions.distress);
+      const angerVal = parseEmotionPct(emotions.anger);
+      const nervVal = parseEmotionPct(emotions.nervousness);
+      const domEmotion = String(emotions.dominant || "Neutral").toUpperCase();
+
+      const emotionContainer = document.createElement("div");
+      emotionContainer.className = "emotion-meters-container";
+      emotionContainer.innerHTML = `
+        <div class="emotion-meters-title">
+          <span>Acoustic Vocal Emotion Spectrum</span>
+          <span>Dominant: ${domEmotion}</span>
+        </div>
+        <div class="emotion-meter-row">
+          <span class="emotion-label">🔴 Fear:</span>
+          <div class="emotion-bar-track"><div class="emotion-bar-fill bar-fear" style="width: ${fearVal}%"></div></div>
+          <span class="emotion-val">${fearVal}%</span>
+        </div>
+        <div class="emotion-meter-row">
+          <span class="emotion-label">🟣 Distress:</span>
+          <div class="emotion-bar-track"><div class="emotion-bar-fill bar-distress" style="width: ${distressVal}%"></div></div>
+          <span class="emotion-val">${distressVal}%</span>
+        </div>
+        <div class="emotion-meter-row">
+          <span class="emotion-label">🟠 Anger:</span>
+          <div class="emotion-bar-track"><div class="emotion-bar-fill bar-anger" style="width: ${angerVal}%"></div></div>
+          <span class="emotion-val">${angerVal}%</span>
+        </div>
+        <div class="emotion-meter-row">
+          <span class="emotion-label">🟡 Jitter:</span>
+          <div class="emotion-bar-track"><div class="emotion-bar-fill bar-nervousness" style="width: ${nervVal}%"></div></div>
+          <span class="emotion-val">${nervVal}%</span>
+        </div>
       `;
+
+      // 5. Problem Statement Compliance: Responsible AI Guardrail Advisory
+      const guardrail = document.createElement("div");
+      guardrail.className = "responsible-ai-guardrail";
+      guardrail.textContent = "⚖️ Responsible AI Advisory: Emotion predictions are indicative triage signals, not evidence of guilt or intent.";
+
+      // 6. Meta Bar
+      const meta = document.createElement("div");
+      meta.className = "card-meta";
+      const gatewaySpan = document.createElement("span");
+      gatewaySpan.textContent = `GATEWAY: ${call.dialed_number || "2007"}`;
+      const durationSpan = document.createElement("span");
+      durationSpan.dataset.durationCallId = call.call_id;
+      durationSpan.textContent = `DURATION: ${Math.max(
+        0,
+        Math.floor(call.duration || 0)
+      )}s`;
+      meta.appendChild(gatewaySpan);
+      meta.appendChild(durationSpan);
+
+      // 7. Claim Button
+      const claimBtn = document.createElement("button");
+      claimBtn.className = "claim-btn";
+      const isBotTriaging = call.status === "IVR" || call.status === "RINGING";
+      claimBtn.disabled = isClaimedByOther || isClaimedByMe || busy || isBotTriaging;
+      if (isBotTriaging) {
+        claimBtn.textContent = "[ ⏳ BOT RECORDING STATEMENT... ]";
+      } else if (isClaimedByOther) {
+        claimBtn.textContent = `[ 🔒 Locked by ${call.officer_id} ]`;
+      } else if (isClaimedByMe) {
+        claimBtn.textContent = "[ ✓ Engaged on Station ]";
+      } else if (busy) {
+        claimBtn.textContent = "[ FINISH CURRENT CALL FIRST ]";
+      } else if (prioScore >= 85) {
+        claimBtn.textContent = "[ 🚨 DISPATCH URGENT SQUAD ]";
+      } else {
+        claimBtn.textContent = "[ ACCEPT CALL ]";
+      }
+      if (!claimBtn.disabled) {
+        claimBtn.addEventListener("click", () => claimCall(call.call_id));
+      }
+
+      card.appendChild(top);
+      card.appendChild(triageHeader);
+      card.appendChild(summaryBox);
+      if (scamFlagsContainer) card.appendChild(scamFlagsContainer);
+      if (sopBox) card.appendChild(sopBox);
+      card.appendChild(emotionContainer);
+      card.appendChild(guardrail);
+      card.appendChild(meta);
+      card.appendChild(claimBtn);
+      queueList.appendChild(card);
+    } catch (cardErr) {
+      console.error(`[Queue] Failed rendering call card ${call?.call_id}:`, cardErr);
     }
-
-    // 4. Acoustic Speech Emotion Recognition Gauges
-    const emotions = call.emotions || {};
-    const fearVal = Math.round((Number(emotions.fear) || 0) * 100);
-    const distressVal = Math.round((Number(emotions.distress) || 0) * 100);
-    const angerVal = Math.round((Number(emotions.anger) || 0) * 100);
-    const nervVal = Math.round((Number(emotions.nervousness) || 0) * 100);
-
-    const emotionContainer = document.createElement("div");
-    emotionContainer.className = "emotion-meters-container";
-    emotionContainer.innerHTML = `
-      <div class="emotion-meters-title">
-        <span>Acoustic Vocal Emotion Spectrum</span>
-        <span>Dominant: ${(emotions.dominant || "Neutral").toUpperCase()}</span>
-      </div>
-      <div class="emotion-meter-row">
-        <span class="emotion-label">🔴 Fear:</span>
-        <div class="emotion-bar-track"><div class="emotion-bar-fill bar-fear" style="width: ${fearVal}%"></div></div>
-        <span class="emotion-val">${fearVal}%</span>
-      </div>
-      <div class="emotion-meter-row">
-        <span class="emotion-label">🟣 Distress:</span>
-        <div class="emotion-bar-track"><div class="emotion-bar-fill bar-distress" style="width: ${distressVal}%"></div></div>
-        <span class="emotion-val">${distressVal}%</span>
-      </div>
-      <div class="emotion-meter-row">
-        <span class="emotion-label">🟠 Anger:</span>
-        <div class="emotion-bar-track"><div class="emotion-bar-fill bar-anger" style="width: ${angerVal}%"></div></div>
-        <span class="emotion-val">${angerVal}%</span>
-      </div>
-      <div class="emotion-meter-row">
-        <span class="emotion-label">🟡 Jitter:</span>
-        <div class="emotion-bar-track"><div class="emotion-bar-fill bar-nervousness" style="width: ${nervVal}%"></div></div>
-        <span class="emotion-val">${nervVal}%</span>
-      </div>
-    `;
-
-    // 5. Problem Statement Compliance: Responsible AI Guardrail Advisory
-    const guardrail = document.createElement("div");
-    guardrail.className = "responsible-ai-guardrail";
-    guardrail.textContent = "⚖️ Responsible AI Advisory: Emotion predictions are indicative triage signals, not evidence of guilt or intent.";
-
-    // 6. Meta Bar
-    const meta = document.createElement("div");
-    meta.className = "card-meta";
-    const gatewaySpan = document.createElement("span");
-    gatewaySpan.textContent = `GATEWAY: ${call.dialed_number || "2007"}`;
-    const durationSpan = document.createElement("span");
-    durationSpan.dataset.durationCallId = call.call_id;
-    durationSpan.textContent = `DURATION: ${Math.max(
-      0,
-      Math.floor(call.duration || 0)
-    )}s`;
-    meta.appendChild(gatewaySpan);
-    meta.appendChild(durationSpan);
-
-    // 7. Claim Button
-    const claimBtn = document.createElement("button");
-    claimBtn.className = "claim-btn";
-    const isBotTriaging = call.status === "IVR" || call.status === "RINGING";
-    claimBtn.disabled = isClaimedByOther || isClaimedByMe || busy || isBotTriaging;
-    if (isBotTriaging) {
-      claimBtn.textContent = "[ ⏳ BOT RECORDING STATEMENT... ]";
-    } else if (isClaimedByOther) {
-      claimBtn.textContent = `[ 🔒 Locked by ${call.officer_id} ]`;
-    } else if (isClaimedByMe) {
-      claimBtn.textContent = "[ ✓ Engaged on Station ]";
-    } else if (busy) {
-      claimBtn.textContent = "[ FINISH CURRENT CALL FIRST ]";
-    } else if (prioScore >= 85) {
-      claimBtn.textContent = "[ 🚨 DISPATCH URGENT SQUAD ]";
-    } else {
-      claimBtn.textContent = "[ ACCEPT CALL ]";
-    }
-    if (!claimBtn.disabled) {
-      claimBtn.addEventListener("click", () => claimCall(call.call_id));
-    }
-
-    card.appendChild(top);
-    card.appendChild(triageHeader);
-    card.appendChild(summaryBox);
-    if (scamFlagsContainer) card.appendChild(scamFlagsContainer);
-    if (sopBox) card.appendChild(sopBox);
-    card.appendChild(emotionContainer);
-    card.appendChild(guardrail);
-    card.appendChild(meta);
-    card.appendChild(claimBtn);
-    queueList.appendChild(card);
   });
 
   startDurationTicker();
