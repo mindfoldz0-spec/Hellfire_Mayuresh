@@ -16,6 +16,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from starlette.concurrency import run_in_threadpool
 
+from backend.app.ai import analyze_call_forensics
 from backend.app.config import (
     ALLOWED_AUDIO_EXTENSIONS,
     AUDIO_NAME_RE,
@@ -299,6 +300,18 @@ async def upload_recording(
     if cloud_url:
         recording_url = cloud_url
 
+    triage_data = {
+        "priority_score": getattr(call, "triage_priority_score", 10),
+        "urgency_level": getattr(call, "urgency_level", "ROUTINE"),
+        "urgency_badge": getattr(call, "urgency_badge", "🟢 ROUTINE"),
+        "incident_category": getattr(call, "incident_category", "GENERAL REPORT"),
+        "incident_summary": getattr(call, "incident_summary", ""),
+        "transcript": getattr(call, "transcript", ""),
+        "emotions": getattr(call, "emotions", {}),
+        "scam_indicators": getattr(call, "scam_indicators", []),
+        "officer_sop": getattr(call, "officer_sop", ""),
+    }
+
     metadata: Dict[str, Any] = {
         "id": recording_id,
         "meta_name": meta_name,
@@ -314,6 +327,7 @@ async def upload_recording(
         "mime_type": mime_type,
         "original_filename": Path(audio_file.filename or "").name,
         "cloud_stored": bool(cloud_url),
+        "triage": triage_data,
     }
     await run_in_threadpool(_write_json_sync, RECORDINGS_DIR / meta_name, metadata)
     await run_in_threadpool(_upload_json_to_supabase_sync, meta_name, metadata)
@@ -381,3 +395,50 @@ async def update_recording_notes(
         ) from exc
     updated["meta_name"] = meta_name
     return JSONResponse(updated)
+
+
+@router.post("/{meta_name}/analyze")
+async def analyze_recording(
+    meta_name: str,
+    force: bool = False,
+    _: str = Depends(require_officer),
+):
+    path = _safe_recording_path(meta_name, META_NAME_RE)
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Recording not found.")
+
+    with open(path, "r", encoding="utf-8") as handle:
+        recording = json.load(handle)
+
+    if not isinstance(recording, dict):
+        raise HTTPException(status_code=500, detail="Invalid recording metadata.")
+
+    # Return cached forensic analysis if already done and not forced
+    if not force and recording.get("forensic_analysis"):
+        return JSONResponse(recording["forensic_analysis"])
+
+    triage_info = recording.get("triage", {})
+    transcript = triage_info.get("transcript", "")
+    notes = recording.get("notes", "")
+
+    # Look for local audio file to run acoustic SER
+    audio_filename = recording.get("filename", "")
+    audio_path = str(RECORDINGS_DIR / audio_filename) if audio_filename else None
+
+    # Run forensic intelligence extraction via Groq Qwen + AWS SER
+    forensics = await run_in_threadpool(
+        analyze_call_forensics,
+        transcript=transcript,
+        notes=notes,
+        triage_info=triage_info,
+        audio_path=audio_path,
+    )
+
+    recording["forensic_analysis"] = forensics
+    recording["analyzed_at"] = int(time.time())
+
+    # Save to disk and sync to Supabase
+    await run_in_threadpool(_write_json_sync, path, recording)
+    await run_in_threadpool(_upload_json_to_supabase_sync, meta_name, recording)
+
+    return JSONResponse(forensics)

@@ -455,3 +455,361 @@
 .intel-notes-textarea:focus {
   outline: 2px solid var(--focus-ring);
 }
+
+/* ========================================================
+   FORENSIC AUDIT & EMOTION DOSSIER STYLES
+   ======================================================== */
+.forensic-btn {
+  background: #00E5FF;
+  color: #000;
+  border: 2px solid var(--border-black);
+  box-shadow: 2px 2px 0px var(--border-black);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.forensic-btn:hover {
+  background: #33EEFF;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--border-black);
+}
+
+.forensic-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border-black);
+}
+
+.forensic-dossier-panel {
+  background: #FFFFFF;
+  border: 2px solid var(--border-black);
+  box-shadow: 4px 4px 0px var(--border-black);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dossier Header */
+.dossier-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-bottom: 2px solid var(--border-black);
+  padding-bottom: 10px;
+}
+
+.dossier-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dossier-badge-pill {
+  background: #000000;
+  color: #BEF000;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 8px;
+  letter-spacing: 0.5px;
+}
+
+.dossier-category-tag {
+  background: rgba(0, 229, 255, 0.15);
+  color: #005577;
+  border: 1px solid #00AACC;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+}
+
+.dossier-stats-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dossier-prio-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border: 1px solid var(--border-black);
+}
+
+.dossier-vuln-badge {
+  background: #FFF0F0;
+  color: #CC0000;
+  border: 1px solid #FF9999;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 6px;
+}
+
+/* 4 Core Entity Cards Grid */
+.forensic-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.forensic-card {
+  background: var(--surface-alt);
+  border: 2px solid var(--border-black);
+  box-shadow: 2px 2px 0px var(--border-black);
+  display: flex;
+  flex-direction: column;
+}
+
+.forensic-card-header {
+  background: var(--surface-header);
+  border-bottom: 1px solid var(--border-black);
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+.fcard-body {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fcard-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.fcard-lbl {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.fcard-val {
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.fcard-val.highlight {
+  color: #003399;
+  background: rgba(0, 102, 255, 0.08);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.text-danger { color: #CC0000 !important; }
+.text-warning { color: #B35900 !important; }
+.font-bold { font-weight: 800 !important; }
+
+/* Emotion Spectrum & Prosody Station */
+.forensic-emotion-station {
+  background: #FAFAFA;
+  border: 2px solid var(--border-black);
+  box-shadow: 2px 2px 0px var(--border-black);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.emotion-station-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.emotion-station-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.emotion-badges-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dominant-emotion-badge {
+  background: #FF0033;
+  color: #FFF;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.distress-score-badge {
+  background: #8800CC;
+  color: #FFF;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.dossier-meters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+}
+
+.dmeter-card {
+  background: #FFF;
+  border: 1px solid var(--border-gray);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dmeter-head {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dmeter-track {
+  height: 8px;
+  background: #EEE;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.dmeter-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.bar-fear { background: #FF0033; }
+.bar-distress { background: #8800CC; }
+.bar-anger { background: #FF6600; }
+.bar-nervousness { background: #E6B800; }
+.bar-neutral { background: #66BB66; }
+
+.psych-summary-box {
+  background: #FFF;
+  border-left: 3px solid #8800CC;
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #333333;
+  line-height: 1.4;
+}
+
+.psych-summary-title {
+  font-weight: 800;
+  color: #660099;
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* Facts & SOP Boxes */
+.forensic-facts-box, .forensic-sop-box {
+  background: #FFF;
+  border: 2px solid var(--border-black);
+  box-shadow: 2px 2px 0px var(--border-black);
+  padding: 10px 12px;
+}
+
+.facts-header, .sop-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 800;
+  border-bottom: 1px solid var(--border-gray);
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+}
+
+.facts-timeline-list, .actionable-sop-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.facts-timeline-list li {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #222;
+  position: relative;
+  padding-left: 18px;
+  line-height: 1.35;
+}
+
+.facts-timeline-list li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: #0066CC;
+  font-weight: 800;
+}
+
+.actionable-sop-list li {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #004422;
+  background: #F0FFF4;
+  border-left: 3px solid #00AA44;
+  padding: 4px 8px;
+  line-height: 1.35;
+}
+
+/* Guardrail Advisory */
+.dossier-guardrail-advisory {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #555555;
+  background: #FFFBE6;
+  border: 1px solid #FFE58F;
+  padding: 6px 10px;
+  line-height: 1.35;
+}

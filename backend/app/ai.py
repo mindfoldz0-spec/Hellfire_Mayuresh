@@ -20,6 +20,7 @@ import random
 import re
 import struct
 import tempfile
+import time
 import wave
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
@@ -33,6 +34,7 @@ from backend.app.config import (
     GROQ_MODEL,
     HF_SPACE_ID,
     HUGGINGFACE_API_KEY,
+    SARVAM_LANGUAGE_CODE,
     SARVAM_MODEL,
 )
 
@@ -183,12 +185,17 @@ def transcribe_audio_sarvam(audio_path: str) -> Optional[str]:
         headers = {"api-subscription-key": api_key}
         with open(audio_path, "rb") as f:
             files = {"file": (os.path.basename(audio_path), f, "audio/wav")}
-            data = {"model": SARVAM_MODEL or "saaras:v4", "language_code": "en-IN"}
+            data = {
+                "model": SARVAM_MODEL or "saaras:v4",
+                "language_code": SARVAM_LANGUAGE_CODE or "unknown",
+            }
             res = requests.post(url, headers=headers, files=files, data=data, timeout=15)
             if res.status_code == 200:
-                transcript = res.json().get("transcript", "").strip()
+                body = res.json()
+                transcript = body.get("transcript", "").strip()
+                detected_lang = body.get("language_code", "unknown")
                 if transcript:
-                    logger.info("Sarvam ASR transcribed: '%s'", transcript)
+                    logger.info("Sarvam ASR transcribed [%s]: '%s'", detected_lang, transcript)
                     return transcript
             else:
                 logger.warning("Sarvam ASR status %d: %s", res.status_code, res.text)
@@ -213,16 +220,17 @@ def analyze_transcript_groq(transcript: str) -> Optional[Dict[str, Any]]:
     }
     prompt = (
         "You are the AI triage copilot for the Cyber Emergency Response System (CERS).\n"
-        f"Analyze the caller's spoken emergency transcript:\n'{text}'\n\n"
-        "Respond ONLY in valid JSON with these exact fields:\n"
+        "Analyze the caller's spoken emergency transcript (which may be in English, Hindi, Marathi, or code-mixed Hinglish):\n"
+        f"'{text}'\n\n"
+        "Respond ONLY in valid JSON with these exact fields (provide all string values in clear English so dispatch officers can immediately read and execute):\n"
         "{\n"
         '  "priority_score": <integer 1-100>,\n'
         '  "urgency_level": <"VERY_VERY_URGENT" | "URGENT" | "ELEVATED" | "ROUTINE">,\n'
         '  "urgency_badge": <"🚨 VERY VERY URGENT" | "⚠️ URGENT" | "🟡 ELEVATED" | "🟢 ROUTINE">,\n'
-        '  "incident_category": <string>,\n'
-        '  "incident_summary": <string>,\n'
-        '  "scam_indicators": [<list of strings>],\n'
-        '  "officer_sop": <string>\n'
+        '  "incident_category": <string in English>,\n'
+        '  "incident_summary": <concise 1-2 sentence emergency summary in English>,\n'
+        '  "scam_indicators": [<list of strings in English>],\n'
+        '  "officer_sop": <tactical SOP steps for the police officer in English>\n'
         "}"
     )
 
@@ -553,3 +561,180 @@ def triage_call_audio(audio_bytes: bytes, mime_type: str = "audio/wav") -> Dict[
                 os.remove(tmp_path)
         except Exception:
             pass
+
+
+def analyze_call_forensics(
+    transcript: str = "",
+    notes: str = "",
+    triage_info: Optional[Dict[str, Any]] = None,
+    audio_path: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Perform post-call deep forensic intelligence extraction and psychological evaluation using Groq Qwen."""
+    api_key = GROQ_API_KEY or os.getenv("GROQ_API_KEY", "").strip()
+    clean_transcript = (transcript or "").strip()
+    clean_notes = (notes or "").strip()
+    triage = triage_info or {}
+
+    # Check if AWS SER can provide fresh acoustic emotions from the recorded file
+    ser_data = None
+    if audio_path and os.path.isfile(audio_path):
+        try:
+            ser_data = query_speech_emotion(audio_path)
+        except Exception as e:
+            logger.warning("SER analysis on recording failed: %s", e)
+
+    emotions = (
+        ser_data.get("emotions")
+        if (ser_data and ser_data.get("emotions"))
+        else triage.get(
+            "emotions",
+            {
+                "fear": 0.15,
+                "distress": 0.20,
+                "anger": 0.10,
+                "nervousness": 0.15,
+                "neutral": 0.40,
+                "dominant": "neutral",
+                "vocal_distress_score": 0.18,
+            },
+        )
+    )
+
+    combined_dialog = (
+        f"CALLER SPOKEN TRANSCRIPT:\n{clean_transcript or 'No automated transcript available.'}\n\n"
+        f"OFFICER OBSERVATIONS & DISPATCH LOG:\n{clean_notes or 'No officer notes recorded.'}"
+    )
+
+    if api_key and (clean_transcript or clean_notes):
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+        prompt = (
+            "You are the Senior Cyber Forensic Investigator for the Cyber Emergency Response System (CERS).\n"
+            "Perform an exhaustive post-call forensic entity extraction and incident reconstruction from this emergency call:\n\n"
+            f"{combined_dialog}\n\n"
+            "Analyze all statements in any language (English, Hindi, Marathi, Hinglish). Extract every critical detail mentioned by caller or officer.\n"
+            "Respond ONLY in valid JSON matching this exact structure (all string fields must be in clear English):\n"
+            "{\n"
+            '  "caller_dossier": {\n'
+            '    "name": "<victim/caller full name if mentioned, e.g. Ramesh Kumar, or \'Not Disclosed\'>",\n'
+            '    "contact": "<caller phone/email if mentioned, or \'Not Disclosed\'>",\n'
+            '    "location": "<caller city, state, or area mentioned, or \'Not Disclosed\'>",\n'
+            '    "language_spoken": "<e.g. English, Hindi, Marathi, Hinglish>"\n'
+            "  },\n"
+            '  "suspect_profile": {\n'
+            '    "claimed_identity": "<name or title scammer claimed, e.g. DCP Vikram Shinde / CBI Officer / Electricity Dept, or \'Unknown\'>",\n'
+            '    "impersonated_agency": "<e.g. Mumbai Police, CBI, ED, FedEx, SBI, MSEDCL, TRAI>",\n'
+            '    "phone_numbers": ["<suspect phone numbers mentioned>"],\n'
+            '    "digital_handles": ["<Skype IDs, Telegram handles, URLs, email addresses>"]\n'
+            "  },\n"
+            '  "financial_impact": {\n'
+            '    "amount_lost": "<amount already stolen/transferred, e.g. ₹50,000, or \'₹0\'>",\n'
+            '    "amount_demanded": "<extortion demand, e.g. ₹2,00,000, or \'None\'>",\n'
+            '    "destination_upi_ids": ["<UPI VPAs mentioned, e.g. fraud@icici>"],\n'
+            '    "destination_bank_accounts": ["<bank accounts mentioned>"],\n'
+            '    "victim_bank": "<victim\'s bank name, e.g. SBI, HDFC, or \'Unknown\'>"\n'
+            "  },\n"
+            '  "attack_vector": {\n'
+            '    "scam_type": "<e.g. Digital Arrest / Law Enforcement Impersonation, Electricity Bill APK Fraud, Sextortion>",\n'
+            '    "coercion_technique": "<e.g. Narcotics arrest threat, Power disconnection ultimatum, Contact book leak>",\n'
+            '    "malicious_tools": ["<e.g. ElectricityBill.apk, AnyDesk, Skype Video Call>"]\n'
+            "  },\n"
+            '  "key_facts_timeline": [\n'
+            '    "<chronological bullet point of what happened and what caller said>",\n'
+            '    "<chronological bullet point of officer action>"\n'
+            '  ],\n'
+            '  "actionable_investigation_sop": [\n'
+            '    "<concrete police investigation step 1, e.g. Freeze recipient UPI ID on NPCI portal>",\n'
+            '    "<concrete police investigation step 2, e.g. Register formal FIR under BNS 318(4) / IT Act 66D>",\n'
+            '    "<concrete police investigation step 3, e.g. File 1930 / I4C cybercrime portal report>"\n'
+            '  ],\n'
+            '  "psychological_evaluation": {\n'
+            '    "dominant_state": "<e.g. Acute Panic, Severe Distress, Confused, Composed>",\n'
+            '    "summary": "<1-2 sentences assessing caller\'s psychological and emotional state>",\n'
+            '    "vulnerability_level": "<CRITICAL | HIGH | MEDIUM | LOW>"\n'
+            '  },\n'
+            '  "triage_verdict": {\n'
+            '    "priority_score": <integer 1-100>,\n'
+            '    "urgency_badge": <"🚨 VERY VERY URGENT" | "⚠️ URGENT" | "🟡 ELEVATED" | "🟢 ROUTINE">\n'
+            '  }\n'
+            "}"
+        )
+        try:
+            payload = {
+                "model": GROQ_MODEL or "qwen/qwen3.8-27b",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are a cyber emergency forensic investigator. Always return strict JSON.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.1,
+                "response_format": {"type": "json_object"},
+            }
+            res = requests.post(url, headers=headers, json=payload, timeout=12)
+            if res.status_code == 200:
+                parsed = json.loads(res.json()["choices"][0]["message"]["content"])
+                parsed["analyzed_at"] = int(time.time())
+                parsed["emotions"] = emotions
+                parsed["responsible_ai_advisory"] = RESPONSIBLE_AI_ADVISORY
+                return parsed
+        except Exception as e:
+            logger.warning("Groq forensic analysis failed: %s", e)
+
+    # Fallback heuristic analysis if API key is missing or prompt failed
+    category = triage.get("incident_category", "CYBER INCIDENT REPORT")
+    prio = triage.get("triage_priority_score", 45)
+    urgency = triage.get("urgency_badge", "🟡 ELEVATED")
+
+    return {
+        "analyzed_at": int(time.time()),
+        "caller_dossier": {
+            "name": "Not Disclosed",
+            "contact": "Emergency Gateway Line",
+            "location": "Local Dispatch Gateway",
+            "language_spoken": "Detected via Audio",
+        },
+        "suspect_profile": {
+            "claimed_identity": "Unknown Cyber Actor",
+            "impersonated_agency": category,
+            "phone_numbers": [],
+            "digital_handles": [],
+        },
+        "financial_impact": {
+            "amount_lost": "Unverified",
+            "amount_demanded": "Unverified",
+            "destination_upi_ids": [],
+            "destination_bank_accounts": [],
+            "victim_bank": "Unverified",
+        },
+        "attack_vector": {
+            "scam_type": category,
+            "coercion_technique": "Social engineering / Threat coercion",
+            "malicious_tools": [],
+        },
+        "key_facts_timeline": [
+            f"Emergency call received and triaged under {category}.",
+            f"Caller statement: '{clean_transcript[:120]}...'" if clean_transcript else "Caller voice recorded.",
+            f"Officer notes: '{clean_notes[:120]}...'" if clean_notes else "Session archived.",
+        ],
+        "actionable_investigation_sop": [
+            "Follow standard cybercrime operating procedure.",
+            "Verify victim credentials and advise immediate password resets.",
+            "Log case reference in state dispatch registry.",
+        ],
+        "psychological_evaluation": {
+            "dominant_state": emotions.get("dominant", "Distressed").capitalize(),
+            "summary": f"Caller demonstrated {round(emotions.get('fear', 0.2)*100)}% acoustic fear and {round(emotions.get('distress', 0.2)*100)}% distress during call.",
+            "vulnerability_level": "HIGH" if prio >= 65 else "MEDIUM",
+        },
+        "triage_verdict": {
+            "priority_score": prio,
+            "urgency_badge": urgency,
+        },
+        "emotions": emotions,
+        "responsible_ai_advisory": RESPONSIBLE_AI_ADVISORY,
+    }

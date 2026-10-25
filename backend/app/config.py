@@ -104,9 +104,10 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 GROQ_MODEL = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b").strip()
 
 # ---------------------------------------------------------------------------
-# Sarvam AI Speech-to-Text Model
+# Sarvam AI Speech-to-Text Model & Language Detection
 # ---------------------------------------------------------------------------
 SARVAM_MODEL = os.getenv("SARVAM_MODEL", "saaras:v4").strip()
+SARVAM_LANGUAGE_CODE = os.getenv("SARVAM_LANGUAGE_CODE", "unknown").strip()
 
 # ---------------------------------------------------------------------------
 # AWS Dedicated Speech Emotion Recognition

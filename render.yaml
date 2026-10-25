@@ -30,6 +30,8 @@ services:
         sync: false
       - key: SARVAM_MODEL
         value: saaras:v4
+      - key: SARVAM_LANGUAGE_CODE
+        value: unknown
       - key: GROQ_API_KEY
         sync: false
       - key: GROQ_MODEL

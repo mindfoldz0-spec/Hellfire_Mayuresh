@@ -54,6 +54,20 @@ export async function saveRecordingNotes(metaName, notes) {
   return data;
 }
 
+export async function analyzeRecordingForensics(metaName) {
+  const response = await apiFetch(
+    `/api/recordings/${encodeURIComponent(metaName)}/analyze`,
+    {
+      method: "POST",
+    }
+  );
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.detail || "Forensic AI analysis failed.");
+  }
+  return data;
+}
+
 export async function uploadRecording(callId, audioBlob, duration, notes) {
   if (!callId || !audioBlob || audioBlob.size === 0) return;
   const extension = extensionForMime(audioBlob.type || "audio/webm");

@@ -70,6 +70,51 @@ export const authTokenInput = document.getElementById("auth-token-input");
 export const authLoginBtn = document.getElementById("auth-login-btn");
 export const authError = document.getElementById("auth-error");
 
+// Deep AI Forensic & Emotional Intelligence Dossier Elements
+export const forensicAnalyzeBtn = document.getElementById("forensic-analyze-btn");
+export const forensicBtnText = document.getElementById("forensic-btn-text");
+export const forensicDossierPanel = document.getElementById("forensic-dossier-panel");
+export const forensicCategoryTag = document.getElementById("forensic-category-tag");
+export const forensicPriorityBadge = document.getElementById("forensic-priority-badge");
+export const forensicVulnerabilityBadge = document.getElementById("forensic-vulnerability-badge");
+
+export const fCallerName = document.getElementById("f-caller-name");
+export const fCallerContact = document.getElementById("f-caller-contact");
+export const fCallerLocation = document.getElementById("f-caller-location");
+export const fCallerLang = document.getElementById("f-caller-lang");
+
+export const fSuspectIdentity = document.getElementById("f-suspect-identity");
+export const fSuspectAgency = document.getElementById("f-suspect-agency");
+export const fSuspectPhones = document.getElementById("f-suspect-phones");
+export const fSuspectHandles = document.getElementById("f-suspect-handles");
+
+export const fAmountLost = document.getElementById("f-amount-lost");
+export const fAmountDemanded = document.getElementById("f-amount-demanded");
+export const fDestinationUpi = document.getElementById("f-destination-upi");
+export const fVictimBank = document.getElementById("f-victim-bank");
+
+export const fScamType = document.getElementById("f-scam-type");
+export const fCoercion = document.getElementById("f-coercion");
+export const fMaliciousTools = document.getElementById("f-malicious-tools");
+
+export const fDominantEmotionBadge = document.getElementById("f-dominant-emotion-badge");
+export const fDistressScoreBadge = document.getElementById("f-distress-score-badge");
+
+export const dbarFear = document.getElementById("dbar-fear");
+export const dvalFear = document.getElementById("dval-fear");
+export const dbarDistress = document.getElementById("dbar-distress");
+export const dvalDistress = document.getElementById("dval-distress");
+export const dbarAnger = document.getElementById("dbar-anger");
+export const dvalAnger = document.getElementById("dval-anger");
+export const dbarNervousness = document.getElementById("dbar-nervousness");
+export const dvalNervousness = document.getElementById("dval-nervousness");
+export const dbarNeutral = document.getElementById("dbar-neutral");
+export const dvalNeutral = document.getElementById("dval-neutral");
+
+export const fPsychSummary = document.getElementById("f-psych-summary");
+export const fFactsTimeline = document.getElementById("f-facts-timeline");
+export const fActionableSop = document.getElementById("f-actionable-sop");
+
 export const gatewayDot =
   gatewayStatus?.parentElement?.querySelector(".live-dot") || null;
 

@@ -290,6 +290,9 @@
               </div>
 
               <div class="detail-header-actions">
+                <button id="forensic-analyze-btn" class="action-btn-small forensic-btn" title="Run Deep AI Forensic & Emotion Audit">
+                  <span id="forensic-btn-text">[ 🔍 FULL AI INCIDENT & EMOTION AUDIT ]</span>
+                </button>
                 <a id="download-audio-btn" class="action-btn-small primary-green" download>[ 📥 Download Audio ]</a>
               </div>
             </div>
@@ -301,6 +304,195 @@
                 <span id="intel-audio-filename" class="audio-filename">call_2007.webm</span>
               </div>
               <audio id="intel-audio-player" class="retro-audio-player" controls preload="auto"></audio>
+            </div>
+
+            <!-- DEEP AI FORENSIC AUDIT & EMOTION DOSSIER -->
+            <div id="forensic-dossier-panel" class="forensic-dossier-panel hidden">
+              <!-- Dossier Header -->
+              <div class="dossier-header-bar">
+                <div class="dossier-title-group">
+                  <span class="dossier-badge-pill">🛡️ CERS FORENSIC EVIDENCE DOSSIER</span>
+                  <span id="forensic-category-tag" class="dossier-category-tag">CYBER EXTORTION</span>
+                </div>
+                <div class="dossier-stats-group">
+                  <span id="forensic-priority-badge" class="dossier-prio-badge score-critical">⚡ PRIORITY: 95/100</span>
+                  <span id="forensic-vulnerability-badge" class="dossier-vuln-badge">CRITICAL VULNERABILITY</span>
+                </div>
+              </div>
+
+              <!-- Forensic Intelligence Grid (4 Core Entity Cards) -->
+              <div class="forensic-cards-grid">
+                <!-- Card 1: Caller / Victim Dossier -->
+                <div class="forensic-card">
+                  <div class="forensic-card-header">
+                    <span class="fcard-icon">👤</span>
+                    <span class="fcard-title">VICTIM / CALLER DOSSIER</span>
+                  </div>
+                  <div class="fcard-body">
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Full Name:</span>
+                      <span id="f-caller-name" class="fcard-val highlight">Not Disclosed</span>
+                    </div>
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Contact / Tel:</span>
+                      <span id="f-caller-contact" class="fcard-val">Emergency Line</span>
+                    </div>
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Location / Area:</span>
+                      <span id="f-caller-location" class="fcard-val">Not Disclosed</span>
+                    </div>
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Dialect / Lang:</span>
+                      <span id="f-caller-lang" class="fcard-val">English / Hindi / Marathi</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 2: Suspect Profile & Impersonation -->
+                <div class="forensic-card">
+                  <div class="forensic-card-header">
+                    <span class="fcard-icon">🎭</span>
+                    <span class="fcard-title">SUSPECT & IMPERSONATION TRACES</span>
+                  </div>
+                  <div class="fcard-body">
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Claimed Identity:</span>
+                      <span id="f-suspect-identity" class="fcard-val text-danger">Unknown</span>
+                    </div>
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Impersonated Agency:</span>
+                      <span id="f-suspect-agency" class="fcard-val">Police / CBI / FedEx</span>
+                    </div>
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Phone Numbers:</span>
+                      <span id="f-suspect-phones" class="fcard-val font-mono">None logged</span>
+                    </div>
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Digital Handles:</span>
+                      <span id="f-suspect-handles" class="fcard-val font-mono">None logged</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 3: Financial Damages & Payment Vector -->
+                <div class="forensic-card">
+                  <div class="forensic-card-header">
+                    <span class="fcard-icon">💳</span>
+                    <span class="fcard-title">FINANCIAL TRACES & LOSSES</span>
+                  </div>
+                  <div class="fcard-body">
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Amount Lost / Debited:</span>
+                      <span id="f-amount-lost" class="fcard-val text-danger font-bold">₹0</span>
+                    </div>
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Amount Demanded:</span>
+                      <span id="f-amount-demanded" class="fcard-val text-warning font-bold">None</span>
+                    </div>
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Fraudulent UPI VPAs:</span>
+                      <span id="f-destination-upi" class="fcard-val font-mono">None reported</span>
+                    </div>
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Compromised Bank:</span>
+                      <span id="f-victim-bank" class="fcard-val">Unknown</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 4: Cyber Attack Vector & Coercion -->
+                <div class="forensic-card">
+                  <div class="forensic-card-header">
+                    <span class="fcard-icon">🛡️</span>
+                    <span class="fcard-title">ATTACK VECTOR & WEAPON</span>
+                  </div>
+                  <div class="fcard-body">
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Scam Classification:</span>
+                      <span id="f-scam-type" class="fcard-val">Digital Arrest / Impersonation</span>
+                    </div>
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Coercion Mechanism:</span>
+                      <span id="f-coercion" class="fcard-val">Arrest Threat / Account Seizure</span>
+                    </div>
+                    <div class="fcard-row">
+                      <span class="fcard-lbl">Malicious Tools:</span>
+                      <span id="f-malicious-tools" class="fcard-val font-mono">None logged</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Multi-Sensory Emotion Spectrum & Prosody Station -->
+              <div class="forensic-emotion-station">
+                <div class="emotion-station-top">
+                  <div class="emotion-station-heading">
+                    <span class="ficon">📊</span>
+                    <span class="ftitle">SPEECH EMOTION SPECTRUM (AWS SER + ACOUSTIC PROSODY)</span>
+                  </div>
+                  <div class="emotion-badges-wrap">
+                    <span id="f-dominant-emotion-badge" class="dominant-emotion-badge">DOMINANT: DISTRESSED</span>
+                    <span id="f-distress-score-badge" class="distress-score-badge">ACOUSTIC DISTRESS: 86%</span>
+                  </div>
+                </div>
+
+                <!-- 5 Animated Emotion Progress Gauges -->
+                <div class="dossier-meters-grid">
+                  <div class="dmeter-card">
+                    <div class="dmeter-head"><span>🔴 FEAR</span><span id="dval-fear">0%</span></div>
+                    <div class="dmeter-track"><div id="dbar-fear" class="dmeter-fill bar-fear" style="width: 0%"></div></div>
+                  </div>
+                  <div class="dmeter-card">
+                    <div class="dmeter-head"><span>🟣 DISTRESS</span><span id="dval-distress">0%</span></div>
+                    <div class="dmeter-track"><div id="dbar-distress" class="dmeter-fill bar-distress" style="width: 0%"></div></div>
+                  </div>
+                  <div class="dmeter-card">
+                    <div class="dmeter-head"><span>🟠 ANGER</span><span id="dval-anger">0%</span></div>
+                    <div class="dmeter-track"><div id="dbar-anger" class="dmeter-fill bar-anger" style="width: 0%"></div></div>
+                  </div>
+                  <div class="dmeter-card">
+                    <div class="dmeter-head"><span>🟡 JITTER / TREMOR</span><span id="dval-nervousness">0%</span></div>
+                    <div class="dmeter-track"><div id="dbar-nervousness" class="dmeter-fill bar-nervousness" style="width: 0%"></div></div>
+                  </div>
+                  <div class="dmeter-card">
+                    <div class="dmeter-head"><span>⚪ CALM / NEUTRAL</span><span id="dval-neutral">0%</span></div>
+                    <div class="dmeter-track"><div id="dbar-neutral" class="dmeter-fill bar-neutral" style="width: 0%"></div></div>
+                  </div>
+                </div>
+
+                <!-- Psychological Assessment Paragraph -->
+                <div class="psych-summary-box">
+                  <span class="psych-summary-title">🧠 Psychological State Assessment:</span>
+                  <span id="f-psych-summary">Caller demonstrated severe distress and vocal tremors consistent with high-pressure coercion.</span>
+                </div>
+              </div>
+
+              <!-- Chronological Facts Timeline -->
+              <div class="forensic-facts-box">
+                <div class="facts-header">
+                  <span class="ficon">📋</span>
+                  <span class="ftitle">KEY FACTS & CHRONOLOGY OF SPOKEN STATEMENTS</span>
+                </div>
+                <ul id="f-facts-timeline" class="facts-timeline-list">
+                  <li>Caller statements will appear here upon forensic audit.</li>
+                </ul>
+              </div>
+
+              <!-- Police Actionable SOP & Next Steps -->
+              <div class="forensic-sop-box">
+                <div class="sop-header">
+                  <span class="ficon">🎯</span>
+                  <span class="ftitle">ACTIONABLE POLICE INVESTIGATION SOP & FIR CHECKLIST</span>
+                </div>
+                <ul id="f-actionable-sop" class="actionable-sop-list">
+                  <li>Official SOP steps will appear here upon forensic audit.</li>
+                </ul>
+              </div>
+
+              <!-- Responsible AI Advisory -->
+              <div class="dossier-guardrail-advisory">
+                ⚖️ <strong>Responsible AI Advisory:</strong> Emotion measurements and AI-extracted entities are indicative investigative signals designed for officer triage assistance only, not admissible proof of legal guilt, intent, or culpability.
+              </div>
             </div>
 
             <!-- Recording Metadata Grid -->
