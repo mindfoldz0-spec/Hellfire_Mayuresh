@@ -1,201 +1,196 @@
-# ⚡ CERS: Cyber Emergency Response System (Hellfire_Mayuresh)
+# 🚨 CERS: Cyber Emergency Response System
+### Real-Time Speech Emotion Analysis & Incident Triage for Cybercrime Investigation
 
-A real-time emergency dispatch console and voice communication platform built for rapid response to cyber threats (ransomware, DDoS, wire fraud, identity hijacking). Features full-duplex WebRTC 2-way voice dispatch, automated AI IVR greeting, multi-officer atomic queue lockout, dual-audio session recording, and an archived call recordings vault.
-
----
-
-## 🛠️ System Architecture
-
-```
-[ Victim / Caller Web Dialer ]
-       │  (HTTPS / Mobile-Friendly DTMF)
-       ▼
-[ Automated IVR Greeting + 1000Hz Sync Tone ]
-       │  (Sarvam AI TTS bulbul:v3 + Wave Sine Tone)
-       ▼
-[ WebSocket Gateway & WebRTC Signaling Relay ]
-       │  (FastAPI + asyncio.Lock Atomic Claim Dispatch)
-       ▼
-[ Officer Dispatch Consoles ] ──► [ Atomic Lockout Rejection to Concurrent Officers ]
-       │
- ┌─────┴────────────────────────────────┐
- │ 2-Way Opus WebRTC Audio Stream       │
- │ Dual-Track Oscilloscope Visualizers  │
- │ In-Browser Dual-Audio Recorder       │
- │ Retro CRT Taskbar & Recordings Vault │
- └──────────────────────────────────────┘
-```
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![WebRTC](https://img.shields.io/badge/Audio-WebRTC%20Opus%2048kHz-333333?logo=webrtc&logoColor=white)](https://webrtc.org/)
+[![AWS EC2](https://img.shields.io/badge/SER%20Microservice-AWS%20EC2%20c7i--flex.large-FF9900?logo=amazon-aws&logoColor=white)](https://aws.amazon.com/)
+[![Groq](https://img.shields.io/badge/LLM%20Inference-Groq%20Qwen--2.5--32b-F55036?logo=groq&logoColor=white)](https://groq.com/)
+[![Sarvam AI](https://img.shields.io/badge/Indic%20Speech-Sarvam%20AI%20saaras%3Av4-6366F1)](https://www.sarvam.ai/)
+[![Supabase](https://img.shields.io/badge/Vault%20Storage-Supabase%20S3-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
 
-## ✨ Features
+## 📌 1. What is CERS?
 
-- **Mobile Caller Web Dialer (`/caller`)**:
-  - DTMF tone audio feedback for keypad dialing.
-  - Automated playback of the emergency IVR greeting with a timeout/skip fallback.
-  - Mic auto un-mutes after the 1000Hz sync tone (or immediately if audio is blocked).
-  - Live canvas frequency oscilloscope.
-  - Server-issued, unguessable call session IDs (no shared `2007` collision).
+**CERS (Cyber Emergency Response System)** is an AI-powered emergency dispatch console and forensic intelligence platform built specifically for **Cybercrime Police Stations** and emergency hotlines. 
 
-- **Officer Dispatch Console (`/officer`)**:
-  - Signed HttpOnly officer sessions; the console requires an access token.
-  - Retro Terminal / 90s OS style aesthetic with `VT323` monospace typography.
-  - Multi-officer concurrent dispatch queue with real-time atomic claim lockout (`asyncio.Lock()`).
-  - One active call per officer; calls are released back to the queue on disconnect.
-  - Dual WebRTC audio visualizers (Incoming Caller Stream vs. Officer Microphone).
-  - In-browser mixed dual-audio session recorder with automated backend upload upon call termination.
+When victims of cybercrime (such as **Digital Arrest extortion**, **phishing**, **UPI bank draining**, or **cyber blackmail**) call the helpline, emergency officers must quickly assess life distress, identify impostors, and prioritize critical cases under intense call pressure.
 
-- **Call Recordings Vault**:
-  - Retro window modal accessed from the bottom OS taskbar or top command bar.
-  - Instant session dual-audio playback of recorded emergency calls.
-  - Authenticated audio download capability.
-  - Technical session telemetry: gateway, audio encoding, file size, and call duration.
-  - Officer dispatch log and case notes editor with persistence.
+CERS solves this challenge by fusing **Real-Time Speech Emotion Recognition (SER)** with **Multilingual Incident Semantic Triage**:
+1. **Live Speech Emotion Analysis**: Detects vocal tremors, panic, fear, anger, distress, and jitter directly from caller audio in real time.
+2. **Dynamic 60/40 Call Prioritization**: Ranks incoming calls on an active queue (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`) using a composite priority score (1–100).
+3. **Forensic Call Dossier Vault**: Automatically transcribes calls across Hindi, Marathi, and English, extracts key spoken entities (Caller name, suspect impersonation, phone numbers, fake UPI IDs, amounts lost/demanded), and generates immediate law enforcement SOPs and FIR checklists.
 
 ---
 
-## 🗂️ Project Structure
+## 🏗️ 2. High-Level Architecture
 
 ```
-backend/
-  app/
-    main.py          # FastAPI app factory, middleware, lifespan, static mounts
-    config.py        # environment variables, paths, limits, officer token
-    security.py      # signed sessions, auth dependencies, rate limits, headers
-    models.py        # Pydantic request models
-    api.py           # officer auth and caller HTTP APIs
-    recordings.py    # authenticated recording upload, playback, and notes API
-    websockets.py    # caller/officer WebSocket signaling routers
-    pages.py         # HTML page routes and /health
-    state.py         # in-memory call manager and atomic claim logic
-  tests/             # pytest suite (conftest sets deterministic auth env)
-frontend/
-  caller/
-    index.html
-    css/             # base, dialpad, incall, visualizer, controls
-    js/              # state, dom, utils, api, ws, webrtc, ivr, ui, call, main
-  officer/
-    index.html
-    css/             # base, command-bar, layout, queue, station, taskbar, vault, auth
-    js/              # state, dom, events, utils, api, auth, websocket, queue, call, vault, ui, main
-  static/            # IVR prompt and shared assets
-  package.json       # marks frontend JS as ES modules for node --check
+                       [ 📱 Distressed Caller ]
+                                  │
+                                  ▼ (WebRTC Dual-Audio / DTMF)
+            ┌───────────────────────────────────────────────┐
+            │       CERS Dispatch Gateway (Render / FastAPI)│
+            └───────┬───────────────────────────────┬───────┘
+                    │                               │
+       (Live Indic Speech Stream)       (Audio WAV Stream)
+                    ▼                               ▼
+     ┌────────────────────────────┐   ┌────────────────────────────┐
+     │      Sarvam AI Cloud       │   │  Dedicated AWS SER Server  │
+     │   STT: saaras:v4 (Indic)   │   │  EC2: c7i-flex.large       │
+     │   TTS: bulbul:v3 (IVR)     │   │  Model: Wav2Vec2 XLS-R     │
+     └──────────────┬─────────────┘   └─────────────┬──────────────┘
+                    │                               │
+                    │  (Transcript + Emotion Stats) │
+                    ▼                               ▼
+            ┌───────────────────────────────────────────────┐
+            │        Groq Cloud LPU (qwen-2.5-32b)          │
+            │  • Multilingual Translation (Marathi/Hindi)   │
+            │  • 60/40 Composite Priority Fusion (1-100)    │
+            │  • Entity Extraction (UPI, Bank, Suspect)     │
+            │  • Police Investigation SOP & FIR Checklist   │
+            └───────────────────────┬───────────────────────┘
+                                    │
+                                    ▼ (Authenticated WebSocket)
+            ┌───────────────────────────────────────────────┐
+            │     👮 Officer Retro Dispatch Console         │
+            │  • Atomic Call Lockout Queue                  │
+            │  • Live Dual-Track Audio Oscilloscopes        │
+            │  • Deep AI Forensic & Emotion Vault           │
+            └───────────────────────────────────────────────┘
+                                    │
+                                    ▼ (Archived Sessions)
+            ┌───────────────────────────────────────────────┐
+            │         Supabase Cloud S3 Storage             │
+            │  • Opus Audio Dual-Stream Recordings          │
+            │  • JSON Forensic Intelligence Metadata        │
+            └───────────────────────────────────────────────┘
 ```
-
-Frontend scripts are native ES modules. The officer console uses a small
-`CustomEvent` bus for cross-feature actions (`ws:send`, `ws:reconnect`,
-`auth:required`, `auth:show`, `vault:refresh`) so feature modules stay
-decoupled and free of circular imports.
 
 ---
 
-## 🚀 Quickstart Guide
+## ⚙️ 3. Technologies & Models Used (Where & Why)
 
-### 1. Prerequisites
+| Component / Layer | Technology / Model Used | Where It Is Deployed / Hosted | Exact Role in CERS |
+|---|---|---|---|
+| **Speech Emotion Recognition (SER)** | **`Wav2Vec2 XLS-R 300M`** + Acoustic Prosody (RMS Loudness, Zero-Crossing, Pitch Tremor) | **AWS EC2 (Mumbai `ap-south-1`)**<br>• Instance: `c7i-flex.large`<br>• Instance ID: `i-0445567d382e25f97`<br>• Endpoint: `http://65.2.34.240:8000/predict` | Analyzes vocal acoustics and neural emotion embeddings in ~740ms. Quantifies **Fear, Distress, Anger, Nervousness/Jitter, and Neutrality** without human bias. |
+| **Multilingual Cyber Triage & Forensics** | **`qwen-2.5-32b`** via **Groq LPU Acceleration** | **Groq Cloud Infrastructure** | Runs sub-second semantic triage. Translates Hindi and Marathi emergency statements into English, extracts criminal entities (UPI VPAs, bank accounts, suspect names, phone numbers), and drafts law enforcement SOP checklists. |
+| **Indic Speech-to-Text (STT)** | **`saaras:v4`** | **Sarvam AI Cloud** | State-of-the-art automatic speech recognition supporting code-mixed Indian English, Hindi, and Marathi with sub-400ms turnaround. |
+| **Automated Police IVR Greeting** | **`bulbul:v3`** + 1000Hz Wave Tone Generator | **Sarvam AI Cloud** / Local Generator | Synthesizes official cyber helpline voice greeting combined with automated 1000Hz beep tone to guide callers. |
+| **Emergency Dispatch Web Gateway** | **FastAPI + Uvicorn (Python 3.10+)** | **Render Cloud PaaS** / Local Server | Serves static assets, manages WebSocket signaling, enforces `asyncio.Lock()` atomic officer call claims, and handles authenticated APIs. |
+| **Real-Time Voice Streaming** | **WebRTC (Opus 48kHz Stereo)** | Google STUN Cluster (`stun.l.google.com:19302`) | Provides full-duplex, low-latency, encrypted peer-to-peer audio communication between victim and officer. |
+| **Persistent Evidence Storage** | **Supabase Storage (S3-Compatible)** | **Supabase Cloud (`ap-southeast-1`)** | Securely archives dual-channel `.webm` call recordings and `.json` forensic metadata dossiers with presigned playback URLs. |
+
+---
+
+## 🌟 4. Core Features
+
+### 📞 1. Citizen Emergency Caller (`/caller`)
+- **Keypad DTMF Feedback**: Realistic dialing tones for emergency numbers.
+- **Automated IVR Guidance**: Plays police warning prompt followed by a 1000Hz tone before unmuting caller microphone.
+- **Voice Activity Detection (VAD)**: In-browser energy VAD detects speech pauses and streams audio segments cleanly.
+- **Live Frequency Oscilloscope**: Visual feedback of outgoing audio on a CRT canvas.
+
+### 👮 2. Officer Dispatch Console (`/officer`)
+- **Retro Terminal Aesthetic**: Cyberpunk / 90s OS workstation UI styled with `VT323` monospace typography and live scanlines.
+- **Multi-Officer Atomic Queue**: `asyncio.Lock()` prevents race conditions; two officers can never accidentally pick up the same caller.
+- **Real-Time Priority Sorting**: Calls are automatically ordered by the 60/40 Composite Priority score (1–100).
+- **Dual Visualizers**: Real-time canvas visualizers comparing incoming caller distress wave vs. officer microphone audio.
+
+### 🛡️ 3. Deep Post-Call Forensic & Emotion Vault
+Selecting any recorded call in the archive allows officers to click **`[ 🔍 FULL AI INCIDENT & EMOTION AUDIT ]`**:
+1. **Multi-Sensory Emotion Spectrum**:
+   - 🔴 **Fear Meter** (`0% - 100%`)
+   - 🟣 **Distress Meter** (`0% - 100%`)
+   - 🟠 **Anger Meter** (`0% - 100%`)
+   - 🟡 **Jitter / Tremor Meter** (`0% - 100%`)
+   - ⚪ **Calm / Neutral Meter** (`0% - 100%`)
+   - Dominant emotion badge & Acoustic Distress Score.
+2. **Victim / Caller Dossier**: Extracted Name, Contact number, City/Location, and Dialect.
+3. **Suspect Traces**: Impersonated Agency (CBI, FedEx, Police), claimed identity, phone numbers, and digital handles.
+4. **Financial Impact**: Exact INR amount debited/demanded (highlighted in bold red), fraudulent destination UPI VPAs, and compromised bank names.
+5. **Attack Vector**: Scam classification (Digital Arrest, Job Task scam, etc.), coercion mechanism, and malicious APKs/tools identified (`AnyDesk`, `CBI-Safety.apk`).
+6. **Key Facts Timeline**: Chronological timeline of spoken statements.
+7. **Actionable Police SOP**: Checklist for immediate law enforcement intervention (1930 portal ticket, freeze UPI via NPCI, Sec 91 CrPC telecom notice).
+8. **Responsible AI Guardrail**: Prominently displays legal advisory that emotion metrics are indicative triage signals, not definitive evidence of guilt or intent.
+
+---
+
+## 🚀 5. Deployment Overview
+
+| Environment | Host Platform | URL / Endpoint |
+|---|---|---|
+| **Full Web Application** | **Render** | `https://vecnaverse.onrender.com` (or local `http://localhost:8000`) |
+| **Speech Emotion Model (SER)** | **AWS EC2 (`c7i-flex.large`, Mumbai)** | `http://65.2.34.240:8000/predict` |
+| **Evidence Vault Storage** | **Supabase Cloud S3** | `https://<project-ref>.supabase.co/storage/v1/object/public/recordings/` |
+| **LLM Inference** | **Groq Cloud LPU** | `api.groq.com/openai/v1` |
+| **Speech Intelligence** | **Sarvam AI API** | `api.sarvam.ai` |
+
+---
+
+## 🛠️ 6. Local Quickstart
+
+### Prerequisites
 - Python 3.10+
-- Node.js (optional, for tooling)
+- Active API keys for Sarvam AI, Groq, and Supabase.
 
-### 2. Installation
+### 1. Clone & Install
 ```bash
 git clone https://github.com/mindfoldz0-spec/Hellfire_Mayuresh.git
 cd Hellfire_Mayuresh
 pip install -r requirements.txt
 ```
 
-### 3. Environment Setup
-Copy `.env.example` to `.env` and configure at least:
-
+### 2. Configure Environment (`.env`)
+Create a `.env` file from `.env.example`:
 ```ini
-sarvam_api=your_sarvam_api_key_here
-CERS_OFFICER_TOKEN=replace-with-a-long-random-token
+# Sarvam AI (Indic Speech)
+sarvam_api=your_sarvam_api_key
+SARVAM_LANGUAGE_CODE=unknown
+
+# Groq Cloud (Qwen 2.5 32B)
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=qwen-2.5-32b
+
+# AWS SER Speech Emotion Recognition Microservice
+AWS_EMOTION_URL=http://65.2.34.240:8000/predict
+
+# Supabase Storage
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your_supabase_service_or_anon_key
+SUPABASE_BUCKET=recordings
+
+# Officer Security
+CERS_OFFICER_TOKEN=your_secure_officer_token
+CERS_SECRET_KEY=your_session_hmac_secret
 ```
 
-Generate a strong officer token with:
-
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
-```
-
-If `CERS_OFFICER_TOKEN` is omitted, the server generates a random token at startup and prints it in the console. Set it explicitly for a stable login across restarts.
-
-### 4. Generate Emergency IVR Audio
-Synthesize the automated greeting prompt combined with a 1000Hz synchronization tone:
-
+### 3. Generate IVR Audio
 ```bash
 python generate_ivr.py
 ```
 
-The synthesized file is written to `frontend/static/ivr_prompt.wav`.
-
-### 5. Start the Server
+### 4. Run Development Server
 ```bash
 python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 ```
+- **Officer Workstation**: [http://localhost:8000/officer](http://localhost:8000/officer)
+- **Caller Dialer**: [http://localhost:8000/caller](http://localhost:8000/caller)
 
-- **Officer Console**: [http://localhost:8000/officer](http://localhost:8000/officer) — enter the officer access token at the login gate.
-- **Caller Web Dialer**: [http://localhost:8000/caller](http://localhost:8000/caller)
-
-### 6. Mobile / HTTPS
-Browsers only allow microphone access in a secure context. `http://<LAN_IP>:8000` will **not** work on mobile. Use HTTPS with a certificate trusted by the device (for example a local reverse proxy, Caddy, or `uvicorn --ssl-keyfile ... --ssl-certfile ...`). For calls across restrictive NATs, configure TURN:
-
-```ini
-CERS_TURN_URL=turn:turn.example.com:3478
-CERS_TURN_USERNAME=cers
-CERS_TURN_CREDENTIAL=replace-me
-CERS_COOKIE_SECURE=1
-```
-
----
-
-## 🔐 Security Model
-
-- Officer console and recording APIs require a signed, HttpOnly session cookie created by `POST /api/auth/login`.
-- The officer access token is compared in constant time; login attempts and call creation are rate-limited.
-- Caller sessions are server-generated UUIDs. The dialed number is display metadata only.
-- Recording uploads are authenticated, size-limited, extension-restricted, and stored with server-generated filenames.
-- Recordings are served through an authenticated API, not a public static mount.
-- Calls are released automatically when an officer disconnects; only the assigned officer can end or release a call.
-- Static file routes are mounted with Starlette's `StaticFiles`; request path parameters are never joined into filesystem paths.
-- Security headers include a Content-Security-Policy, `X-Content-Type-Options`, `X-Frame-Options`, and `Permissions-Policy`.
-- CORS is same-origin by default. Set `CERS_ALLOWED_ORIGINS` only if the frontend is hosted elsewhere.
-
----
-
-## 🧪 Testing & Verification
-
-Run the automated test suite:
-
+### 5. Run Verification Test Suite
 ```bash
-# State, concurrency, disconnect, ownership, and security regression tests
-python -m pytest -v
+pytest -v
 ```
-
-Run the full WebSocket & WebRTC signaling integration test (start the server first and set the same token):
-
-```bash
-$env:CERS_OFFICER_TOKEN = "your-token"   # PowerShell
-python test_e2e_ws.py
-```
+*(Runs all 32 unit and integration tests including authentication, WebSocket signaling, recording upload, and forensic analysis endpoints.)*
 
 ---
 
-## ⚙️ Configuration Reference
+## ⚖️ Responsible AI Advisory
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `sarvam_api` | — | Sarvam AI key for IVR generation |
-| `CERS_OFFICER_TOKEN` | generated | Officer console access token |
-| `CERS_SECRET_KEY` | derived | HMAC key for session cookies |
-| `CERS_COOKIE_SECURE` | `0` | Set to `1` behind HTTPS |
-| `CERS_ALLOWED_ORIGINS` | empty | Comma-separated CORS allowlist |
-| `CERS_TURN_URL` | empty | TURN server URL(s), comma-separated |
-| `CERS_TURN_USERNAME` | empty | TURN username |
-| `CERS_TURN_CREDENTIAL` | empty | TURN credential |
-| `CERS_MAX_RECORDING_BYTES` | 25 MB | Upload size limit |
-| `CERS_MAX_ACTIVE_CALLS` | 500 | Active call capacity |
-| `CERS_CALL_TTL_SECONDS` | 3600 | Retention of ended call state |
+> **Compliance Note:** In accordance with responsible AI standards for law enforcement, Speech Emotion Recognition (SER) metrics, distress scores, and AI-extracted incident entities generated by CERS are **indicative operational signals** designed solely for emergency call triage and prioritizing officer assistance. They do not constitute definitive legal proof of a person's honesty, intent, or culpability.
 
 ---
 
 ## 📄 License
-MIT License. Created for Cyber Emergency Response Operations.
+This project is open-source under the [MIT License](LICENSE). Built for Cyber Emergency Response and Law Enforcement Incident Triage.
