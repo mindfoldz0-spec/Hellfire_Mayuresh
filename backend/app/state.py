@@ -402,7 +402,7 @@ class CallManager:
 
         async def send(websocket: WebSocket) -> bool:
             try:
-                await asyncio.wait_for(websocket.send_json(message), timeout=2.0)
+                await asyncio.wait_for(websocket.send_json(message), timeout=6.0)
                 return True
             except Exception:
                 return False

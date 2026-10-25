@@ -10,7 +10,7 @@ function startCallerHeartbeat() {
     if (state.ws && state.ws.readyState === WebSocket.OPEN) {
       state.ws.send(JSON.stringify({ action: "PING" }));
     }
-  }, 15000);
+  }, 5000);
 }
 
 function stopCallerHeartbeat() {

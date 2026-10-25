@@ -27,7 +27,7 @@ function startHeartbeat() {
     if (state.ws && state.ws.readyState === WebSocket.OPEN) {
       state.ws.send(JSON.stringify({ action: "PING" }));
     }
-  }, 15000); // 15s keepalive ping prevents Render 55s idle timeout
+  }, 5000); // 5s keepalive ping prevents cloud proxy / Render idle drops
 }
 
 function stopHeartbeat() {
@@ -98,11 +98,16 @@ export function connectWebSocket() {
       .catch((error) => console.error("[Officer WS] Handler error:", error));
   };
 
-  socket.onclose = () => {
+  socket.onclose = (event) => {
     if (socket !== state.ws) return;
     stopHeartbeat();
     state.ws = null;
-    setGatewayStatus("DISCONNECTED - RETRYING...", "pulse-red");
+    if (event.code === 4001) {
+      setGatewayStatus("DUPLICATE OFFICER LOGIN (CHECK OTHER TABS)", "pulse-red");
+      state.shouldReconnect = false;
+      return;
+    }
+    setGatewayStatus("RECONNECTING TO GATEWAY...", "pulse-red");
     if (state.shouldReconnect && generation === state.socketGeneration) {
       if (state.reconnectTimer) clearTimeout(state.reconnectTimer);
       state.reconnectTimer = setTimeout(() => {
@@ -110,7 +115,7 @@ export function connectWebSocket() {
         if (state.shouldReconnect && generation === state.socketGeneration) {
           connectWebSocket();
         }
-      }, 1200);
+      }, 1500);
     }
   };
 
