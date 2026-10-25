@@ -56,7 +56,23 @@ export async function startEmergencyCall(number) {
     connectCallerSocket(state.sessionId, {
       onOpen: playIVRSequence,
       onMessage: handleWebSocketMessage,
-      onClose: () => terminateCall(false),
+      onClose: () => {
+        if (state.isTerminating) return;
+        if (state.sessionId) {
+          console.warn("[Caller WS] Socket disconnected while session active. Reconnecting...");
+          setTimeout(() => {
+            if (state.sessionId && !state.isTerminating && (!state.ws || state.ws.readyState !== WebSocket.OPEN)) {
+              connectCallerSocket(state.sessionId, {
+                onOpen: () => console.log("[Caller WS] Reconnected successfully!"),
+                onMessage: handleWebSocketMessage,
+                onClose: () => terminateCall(false),
+              });
+            }
+          }, 1200);
+        } else {
+          terminateCall(false);
+        }
+      },
     });
   } catch (err) {
     console.error("Emergency call setup error:", err);

@@ -286,16 +286,41 @@ export function stopHoldMusic() {
   } catch (e) {}
 }
 
-function transmitTriageAudio(wavBlob) {
+async function transmitTriageAudio(wavBlob) {
   if (!wavBlob || wavBlob.size === 0) {
     console.warn("[VAD] No WAV audio captured to transmit.");
     return;
   }
 
+  console.log(`[VAD] Transmitting native WAV audio (${wavBlob.size} bytes) for AI triage...`);
+
+  // Inform officer UI that statement is finished and being triaged
+  sendAction({ action: "IVR_FINISHED" });
+
+  // 1. Send via reliable HTTP POST upload (no WebSocket frame size limits)
+  try {
+    const formData = new FormData();
+    formData.append("file", wavBlob, "statement.wav");
+
+    const resp = await fetch(`/api/calls/${encodeURIComponent(state.sessionId)}/triage`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (resp.ok) {
+      console.log("[VAD] Triage audio uploaded successfully via HTTP.");
+      return;
+    } else {
+      console.warn("[VAD] HTTP triage upload returned status:", resp.status);
+    }
+  } catch (err) {
+    console.warn("[VAD] HTTP triage upload failed, falling back to WS:", err);
+  }
+
+  // 2. Fallback to WebSocket if HTTP upload failed
   const reader = new FileReader();
   reader.onloadend = () => {
     const base64Data = reader.result.split(",")[1];
-    console.log(`[VAD] Transmitting ${base64Data.length} chars of base64 WAV audio for AI triage...`);
     sendAction({
       action: "TRIAGE_AUDIO",
       mime: "audio/wav",

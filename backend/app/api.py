@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import asyncio
 import os
 import secrets
 from typing import Any, Dict
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile
 
 from backend.app.config import (
     COOKIE_NAME,
@@ -112,3 +113,17 @@ async def rtc_config() -> Dict[str, Any]:
             }
         )
     return {"iceServers": ice_servers}
+
+
+@router.post("/api/calls/{call_id}/triage")
+async def upload_triage_audio(call_id: str, file: UploadFile = File(...)):
+    call = call_manager.get_call(call_id)
+    if not call:
+        raise HTTPException(status_code=404, detail="Call session not found.")
+    audio_bytes = await file.read()
+    if not audio_bytes:
+        raise HTTPException(status_code=400, detail="Empty audio recording.")
+
+    from backend.app.websockets import _async_triage_call
+    asyncio.create_task(_async_triage_call(call_id, audio_bytes, file.content_type or "audio/wav"))
+    return {"status": "triaging", "call_id": call_id}
