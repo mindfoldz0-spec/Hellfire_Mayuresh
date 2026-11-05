@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: cers-dispatch
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      # Credentials are NOT stored in this file. Set them in the Render
+      # dashboard (Environment) or with `render env set`. The app refuses to
+      # start while they are missing or still placeholders.
+      - key: CERS_OFFICERS
+        # In the Render dashboard set this to, e.g.:
+        #   "Mayuresh Alpha:Alpha,Tejas Delta:Delta,Siddhant Beta:Beta"
+        sync: false
+      - key: CERS_OFFICER_PASSWORD
+        sync: false
+      - key: CERS_OFFICER_TOKEN
+        sync: false
+      - key: CERS_SECRET_KEY
+        generateValue: true
+      - key: CERS_COOKIE_SECURE
+        value: "1"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_BUCKET
+        value: recordings
+      - key: HUGGINGFACE_API_KEY
+        sync: false
+      - key: HF_SPACE_ID
+        value: mindfoldz0/cers-voice-emotion
+      - key: sarvam_api
+        sync: false
+      - key: CERS_SER_API_KEY
+        sync: false
+      - key: AWS_EMOTION_URL
+        sync: false
+      - key: SARVAM_MODEL
+        value: saaras:v4
+      - key: SARVAM_LANGUAGE_CODE
+        value: unknown
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: qwen/qwen3.8-27b

@@ -1,0 +1,19 @@
+title = "CERS gitleaks config"
+
+# The repo intentionally publishes sample/placeholder credential strings
+# (.env.example template, the startup blocklist in backend/app/config.py, and
+# the test that verifies the blocklist). They must never be treated as real
+# secrets, so allowlist exactly those literals — anything else that looks like
+# a credential still fails the scan.
+[allowlist]
+  description = "Published sample values that ship in the repo on purpose"
+  paths = [
+    '''\.env\.example''',
+  ]
+  regexes = [
+    '''change-me-to-a-long-random-token''',
+    '''replace-with-a-long-random-token''',
+    '''mayuresh2007''',
+    '''cers-officer-token-2026-auth''',
+    '''cers-2007''',
+  ]

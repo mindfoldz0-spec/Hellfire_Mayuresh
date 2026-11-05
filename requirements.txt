@@ -1,0 +1,13 @@
+# Runtime dependencies, pinned for reproducible builds.
+# Regenerate deliberately, then run `pytest`.
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
+websockets==15.0.1
+python-multipart==0.0.32
+python-dotenv==1.2.4
+requests==2.34.2
+aiofiles==25.1.0
+supabase==2.33.0
+gradio_client==2.7.2
+# Printable case-packet export (GET /api/recordings/{meta}/packet.pdf)
+reportlab==5.0.1

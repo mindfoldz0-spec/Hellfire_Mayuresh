@@ -1,0 +1,40 @@
+/** Shared mutable state for the caller dialer. */
+
+export const state = {
+  dialedNumber: "2007",
+  sessionId: null,
+  // Capability token proving this dialer owns the session.
+  callToken: null,
+  ws: null,
+  localStream: null,
+  peerConnection: null,
+  timerInterval: null,
+  callSeconds: 0,
+  isMuted: false,
+  audioCtx: null,
+  analyserNode: null,
+  micVisualizerSource: null,
+  remoteVisualizerSource: null,
+  animationFrameId: null,
+  toneCtx: null,
+  messageChain: Promise.resolve(),
+  pendingCandidates: [],
+  ivrFinished: false,
+  ivrTimeUpdateHandler: null,
+  ivrFallbackTimer: null,
+  isTerminating: false,
+  rtcConfigPromise: null,
+  mediaRecorder: null,
+  triageChunks: [],
+  vadActive: false,
+  vadSilenceTimer: null,
+  vadMaxTimer: null,
+  statementSent: false,
+  // Statement window (extendable) and the chosen spoken language.
+  statementStartedAt: 0,
+  statementMaxMs: 10000,
+  extensions: 0,
+  language: "en-IN",
+  // True when the microphone was unavailable and the caller is typing.
+  textOnly: false,
+};

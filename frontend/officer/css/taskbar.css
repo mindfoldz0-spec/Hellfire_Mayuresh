@@ -1,0 +1,155 @@
+/* OFFICER: bottom retro taskbar and start menu */
+
+/* ========================================================
+   BOTTOM RETRO TASKBAR
+   ======================================================== */
+.system-taskbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: var(--surface);
+  border-top: 2px solid var(--border-black);
+  box-shadow: 0 -3px 0px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  z-index: 1000;
+  font-family: var(--font-mono);
+}
+
+.taskbar-left, .taskbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.taskbar-btn {
+  background: var(--surface-alt);
+  border: 2px solid var(--border-black);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: bold;
+  padding: 4px 12px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px var(--border-black);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.1s ease;
+}
+
+.taskbar-btn:hover {
+  background: var(--primary-hover);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--border-black);
+}
+
+.taskbar-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border-black);
+}
+
+.taskbar-btn.start-btn {
+  background: var(--surface-header);
+}
+
+.taskbar-btn.active-app {
+  border-color: var(--border-black);
+}
+
+.taskbar-badge {
+  background: var(--primary);
+  border: 1px solid var(--border-black);
+  color: var(--border-black);
+  font-size: 13px;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.taskbar-status-item {
+  font-size: 14px;
+  color: var(--text-secondary);
+  border-left: 1px dashed var(--border-gray);
+  padding-left: 10px;
+}
+
+.taskbar-clock {
+  background: var(--primary);
+  border: 2px solid var(--border-black);
+  color: var(--border-black);
+  font-weight: bold;
+  font-size: 16px;
+  padding: 3px 10px;
+  box-shadow: 2px 2px 0px var(--border-black);
+}
+
+/* RETRO START MENU POPUP */
+.start-menu-popup {
+  position: fixed;
+  bottom: 50px;
+  left: 14px;
+  width: 290px;
+  background: var(--surface);
+  border: 2px solid var(--border-black);
+  box-shadow: 6px -6px 0px var(--border-black);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.15s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.start-menu-header {
+  background: var(--surface-header);
+  border-bottom: 2px solid var(--border-black);
+  padding: 10px 12px;
+}
+
+.start-menu-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  display: block;
+}
+
+.start-menu-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.start-menu-items {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  gap: 4px;
+}
+
+.start-item {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.1s ease;
+}
+
+.start-item:hover {
+  background: var(--primary);
+  border-color: var(--border-black);
+  font-weight: bold;
+}

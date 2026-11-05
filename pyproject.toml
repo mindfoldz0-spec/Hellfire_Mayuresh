@@ -1,0 +1,63 @@
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+  ".git",
+  "__pycache__",
+  "backend/recordings",
+  "temp",
+  "frontend",
+  ".pt",
+  ".pytest-tmp",
+]
+
+[tool.ruff.lint]
+# E/F/W are the classic pyflakes+pycodestyle set; I sorts imports, UP modernises
+# syntax, B catches real bugs (mutable defaults, blind excepts), C4/SIM tidy.
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = [
+  "E501",   # long lines are handled by the formatter, not the linter
+  "B008",   # FastAPI's File()/Depends() in defaults is the documented idiom
+  "SIM105", # contextlib.suppress reads worse around await in this codebase
+  # Annotation modernisation (typing.Dict -> dict) is cosmetic and would touch
+  # 150+ signatures; the files already use `from __future__ import annotations`.
+  "UP006",
+  "UP035",
+  "UP045",
+  # The Sarvam AI key is documented as `sarvam_api` (lowercase) by the vendor.
+  "SIM112",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"backend/tests/*" = ["B011", "SIM117"]  # nested with-blocks read better in tests
+"aws_service/*" = ["UP"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["backend/app"]
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+# The app deliberately uses plain dicts for JSON payloads; strict typing of
+# every LLM field is not worth the noise. These keep the useful checks.
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[[tool.mypy.overrides]]
+module = ["supabase.*", "gradio_client.*", "reportlab.*", "aiofiles.*"]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["backend/app"]
+omit = ["backend/app/__init__.py"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["backend/tests"]
+pythonpath = ["."]
+addopts = "-q -m 'not e2e'"
+markers = [
+  "e2e: end-to-end flow that needs a running server (deselected by default)",
+]

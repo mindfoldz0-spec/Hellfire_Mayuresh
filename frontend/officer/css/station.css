@@ -1,0 +1,362 @@
+/* OFFICER: active station, standby phone, scopes, notes, and actions */
+
+/* ACTIVE STATION PANEL */
+.active-station-panel {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.station-idle-state {
+  margin: auto;
+  text-align: center;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px dashed var(--border-gray);
+  padding: 40px 24px;
+  background: var(--surface-alt);
+}
+
+/* RETRO STANDBY PHONE ICON & RINGING ANIMATION */
+.standby-phone-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  position: relative;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
+  cursor: pointer;
+}
+
+.standby-phone-wrapper:hover {
+  transform: scale(1.08);
+}
+
+.standby-phone-wrapper svg {
+  width: 80px;
+  height: 80px;
+  display: block;
+  overflow: visible;
+}
+
+/* Animations from user's customizer */
+@keyframes ringPulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--pulse-color, rgba(255, 0, 0, 0.7));
+  }
+  70% {
+    box-shadow: 0 0 0 28px rgba(255, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+  }
+}
+
+@keyframes phoneShake {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  10%, 30%, 50% { transform: rotate(-9deg) scale(1.06); }
+  20%, 40%, 60% { transform: rotate(9deg) scale(1.06); }
+  70% { transform: rotate(0deg) scale(1); }
+}
+
+.animate-ring-pulse,
+.standby-phone-wrapper.ringing {
+  --pulse-color: rgba(255, 0, 0, 0.75);
+  animation: ringPulse 1.8s infinite cubic-bezier(0.25, 0.8, 0.25, 1);
+  border-radius: 9999px;
+}
+
+.animate-phone-shake .handset-group,
+.standby-phone-wrapper.ringing .handset-group,
+.card-phone-badge.ringing .handset-group {
+  transform-origin: 50px 50px;
+  animation: phoneShake 1.8s infinite ease-in-out;
+}
+
+.standby-phone-wrapper.ringing #standby-circle {
+  fill: #FF0000;
+  stroke: #000000;
+  filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.5));
+}
+
+.standby-phone-wrapper.ringing #standby-handset {
+  fill: #FFFFFF;
+}
+
+/* Card Phone Badge (Inside Queue Cards) */
+.card-phone-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.card-phone-badge svg {
+  width: 28px;
+  height: 28px;
+  display: block;
+}
+
+.card-phone-badge.ringing {
+  --pulse-color: rgba(255, 0, 0, 0.7);
+  animation: ringPulse 1.6s infinite cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.idle-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.idle-sub {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.station-active-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.station-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--border-black);
+  margin-bottom: 16px;
+}
+
+.caller-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.emergency-badge {
+  background: var(--primary);
+  border: 2px solid var(--border-black);
+  color: var(--border-black);
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  box-shadow: 2px 2px 0px var(--border-black);
+}
+
+.active-caller-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  letter-spacing: 2px;
+  color: var(--text-primary);
+}
+
+.active-timer {
+  font-size: 22px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.recording-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFF0F2;
+  border: 2px solid var(--red-alert);
+  padding: 4px 12px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--red-alert);
+  box-shadow: 2px 2px 0px var(--border-black);
+}
+
+.rec-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--red-alert);
+  border: 1px solid var(--border-black);
+}
+
+/* OSCILLOSCOPES (RETRO CRT MONITOR FRAMES) */
+.oscilloscope-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.scope-card {
+  background: #111B13;
+  border: 2px solid var(--border-black);
+  box-shadow: 3px 3px 0px var(--border-black);
+  padding: 10px;
+}
+
+.scope-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+  padding-bottom: 4px;
+}
+
+.scope-label {
+  font-size: 15px;
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+  color: var(--primary);
+}
+
+.scope-freq {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: #7AA884;
+}
+
+.scope-card canvas {
+  width: 100%;
+  height: 75px;
+  display: block;
+  background: #09120B;
+  border: 1px solid rgba(0, 255, 0, 0.4);
+}
+
+/* NOTES SECTION & CHIPS (FROM STYLEGUIDE) */
+.notes-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.notes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notes-label {
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.quick-tags {
+  display: flex;
+  gap: 6px;
+}
+
+/* CHIPS (FROM STYLEGUIDE: [Filter X] [Tag X]) */
+.tag-btn {
+  background: var(--surface-alt);
+  border: 2px solid var(--border-black);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 1px 1px 0px var(--border-black);
+  transition: all 0.1s ease;
+}
+
+.tag-btn:hover {
+  background: var(--primary);
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0px var(--border-black);
+}
+
+.tag-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 0px 0px 0px var(--border-black);
+}
+
+.incident-textarea {
+  background: var(--surface-alt);
+  border: 2px solid var(--border-black);
+  padding: 10px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  height: 75px;
+  resize: none;
+  outline: none;
+  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.1);
+}
+
+.incident-textarea:focus {
+  outline: 2px solid var(--focus-ring);
+}
+
+/* STATION ACTIONS */
+.station-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.action-btn-secondary {
+  background: var(--surface-alt);
+  border: 2px solid var(--border-black);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px var(--border-black);
+}
+
+.action-btn-secondary:hover {
+  background: var(--surface-header);
+}
+
+.action-btn-secondary.active {
+  background: var(--amber-alert);
+}
+
+.action-btn-danger {
+  background: var(--red-alert);
+  border: 2px solid var(--border-black);
+  color: #FFFFFF;
+  padding: 8px 20px;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px var(--border-black);
+}
+
+.action-btn-danger:hover {
+  background: #D50000;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--border-black);
+}
+
+.action-btn-danger:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--border-black);
+}

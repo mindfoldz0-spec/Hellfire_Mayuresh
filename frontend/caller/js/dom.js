@@ -1,0 +1,47 @@
+/** Cached DOM references for the caller dialer. */
+
+export const dialpadScreen = document.getElementById("dialpad-screen");
+export const incallScreen = document.getElementById("incall-screen");
+export const phoneInput = document.getElementById("phone-number-input");
+export const callBtn = document.getElementById("call-btn");
+export const clearBtn = document.getElementById("clear-btn");
+export const keyBtns = document.querySelectorAll(".key-btn");
+export const languageSelect = document.getElementById("language-select");
+
+export const incallNumberTitle = document.getElementById("incall-number-title");
+export const callStatusPill = document.getElementById("call-status-pill");
+export const callStatusText = document.getElementById("call-status-text");
+export const callTimer = document.getElementById("call-timer");
+export const visualizerCaption = document.getElementById("visualizer-label");
+export const visualizerCanvas = document.getElementById("caller-visualizer");
+export const canvasCtx = visualizerCanvas.getContext("2d");
+export const skipIvrBtn = document.getElementById("skip-ivr-btn");
+export const fastSubmitBtn = document.getElementById("fast-submit-btn");
+export const statementCountdown = document.getElementById("statement-countdown");
+export const extendStatementBtn = document.getElementById("extend-statement-btn");
+export const visualizerWrapper = document.querySelector(".visualizer-wrapper");
+
+export const officerCard = document.getElementById("officer-card");
+export const officerNameDisplay = document.getElementById("officer-name-display");
+export const toggleMuteBtn = document.getElementById("toggle-mute-btn");
+export const muteLabel = document.getElementById("mute-label");
+export const micIconOn = document.getElementById("mic-icon-on");
+export const micIconOff = document.getElementById("mic-icon-off");
+export const hangupBtn = document.getElementById("hangup-btn");
+
+// Text fallback (microphone denied or unavailable)
+export const textFallback = document.getElementById("text-fallback");
+export const textStatement = document.getElementById("text-statement");
+export const sendTextBtn = document.getElementById("send-text-btn");
+
+// Quick-action bar
+export const tabKeypad = document.getElementById("tab-keypad");
+export const tabHelplines = document.getElementById("tab-helplines");
+export const tabLanguage = document.getElementById("tab-language");
+export const tabPrivacy = document.getElementById("tab-privacy");
+export const incallGrid = document.querySelector(".incall-grid-container");
+
+export const ivrAudio = document.getElementById("ivr-audio");
+export const recordedAudio = document.getElementById("recorded-audio");
+export const holdAudio = document.getElementById("hold-audio");
+export const remoteAudio = document.getElementById("remote-audio");

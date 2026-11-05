@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self'" />
+  <title>CERS Dispatcher Sign-In</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      font-family: ui-monospace, "VT323", monospace; background: #050608; color: #d6f7df;
+    }
+    .frame {
+      width: min(480px, 92vw); border: 1px solid #1f4d2e; padding: 2rem;
+      background: #0b0f0c; box-shadow: 0 0 40px rgba(0, 255, 140, 0.08);
+    }
+    h1 { font-size: 1.5rem; letter-spacing: 0.08em; margin: 0 0 0.25rem; color: #39ff6a; }
+    p { color: #6fcf87; margin-top: 0; font-size: 0.95rem; }
+    label { display: block; font-size: 0.8rem; letter-spacing: 0.1em; margin: 1rem 0 0.35rem; color: #9fd4ad; }
+    input {
+      width: 100%; box-sizing: border-box; padding: 0.7rem; background: #101713; border: 1px solid #1f4d2e;
+      color: inherit; font: inherit;
+    }
+    button {
+      margin-top: 1.25rem; width: 100%; padding: 0.75rem; background: #123620; color: #39ff6a;
+      border: 1px solid #39ff6a; font: inherit; cursor: pointer;
+    }
+    button:disabled { opacity: 0.5; cursor: wait; }
+    .error { min-height: 1.5rem; color: #ff6b6b; font-size: 0.9rem; margin-top: 0.75rem; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <h1>CERS SECURE ACCESS</h1>
+    <p>Officer dispatch authentication</p>
+    <form id="login-form" autocomplete="off">
+      <label for="officer-id">STATION OPERATOR</label>
+      <input id="officer-id" name="officer_id" list="officer-list" autocomplete="username" required />
+      <datalist id="officer-list"></datalist>
+      <label for="password">PASSWORD</label>
+      <input id="password" name="token" type="password" autocomplete="current-password" required />
+      <button id="submit-btn" type="submit">[ AUTHENTICATE ]</button>
+    </form>
+    <div id="login-error" class="error" role="alert"></div>
+  </main>
+  <script type="module" src="/officer/js/login.js"></script>
+</body>
+</html>

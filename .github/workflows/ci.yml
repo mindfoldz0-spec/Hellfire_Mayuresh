@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend (lint, types, tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: pip install -r requirements-dev.txt
+      - name: Lint (ruff)
+        run: python -m ruff check .
+      - name: Types (mypy)
+        run: python -m mypy
+      - name: Tests (offline, with coverage floor)
+        run: >
+          python -m pytest
+          --cov=backend/app
+          --cov-report=term-missing
+          --cov-fail-under=70
+
+  e2e:
+    name: End-to-end dispatch flow
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: pip install -r requirements-dev.txt
+      - name: Start gateway
+        run: >
+          CERS_OFFICERS=OFFICER_01:cers-ci-officer-1-password,OFFICER_02:cers-ci-officer-2-password
+          python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8010 &
+          for i in {1..45}; do
+            curl -fs http://127.0.0.1:8010/health >/dev/null && exit 0;
+            sleep 2;
+          done;
+          echo "gateway did not become healthy"; exit 1
+      - name: End-to-end flow
+        run: python -m pytest -o addopts='' -m e2e backend/tests/test_e2e_ws.py
+        env:
+          CERS_E2E_BASE_URL: http://127.0.0.1:8010
+          CERS_E2E_OFFICERS: "OFFICER_01:cers-ci-officer-1-password,OFFICER_02:cers-ci-officer-2-password"
+
+  frontend:
+    name: Frontend (syntax, imports, DOM bindings)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Static checks
+        run: node scripts/check_frontend.mjs
+
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

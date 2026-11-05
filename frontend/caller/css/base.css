@@ -1,0 +1,300 @@
+/* CALLER: Clean native dialer styling, white background, emblem watermark */
+
+:root {
+  --bg-primary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --text-primary: #000000;
+  --text-secondary: #8E8E93;
+  --text-muted: #AEAEB2;
+  --ios-green: #34C759;
+  --ios-green-active: #28a745;
+  --ios-red: #FF3B30;
+  --ios-red-active: #d72b22;
+  --ios-blue: #007AFF;
+  --ios-gray-btn: #E5E5EA;
+  --ios-gray-btn-active: #D1D1D6;
+  --font-ios: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", Menlo, Consolas, Monaco, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background-color: #FFFFFF;
+  color: var(--text-primary);
+  font-family: var(--font-ios);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Dialer & Call Container: Clean White Background with Golden National Emblem Watermark */
+.app-container {
+  width: 100%;
+  max-width: 440px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Watermark Emblem Layer - Perfectly Centered on both Dialer and In-Call screens */
+.app-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/static/emblem.png?v=2');
+  background-repeat: no-repeat;
+  background-position: center 46%;
+  background-size: min(78vw, 320px) auto;
+  opacity: 0.30;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Screens */
+.screen {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 16px 20px 0 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* Desktop Presentation (Wider screens): Clean centered phone-width layout without fake bezel */
+@media (min-width: 601px) {
+  body {
+    background-color: #F2F2F7;
+    align-items: center;
+    padding: 20px 0;
+  }
+  .app-container {
+    height: 860px;
+    max-height: 96vh;
+    border-radius: 24px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* Mobile Devices: 100% Native Edge-to-Edge Dialer */
+@media (max-width: 600px) {  body {
+    background-color: #FFFFFF;
+    padding: 0;
+  }
+  .app-container {
+    max-width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100%;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+  .screen {
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}
+
+/* ========================================================
+   TOAST NOTICES (replaces blocking window.alert)
+   ======================================================== */
+#caller-toast-container {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: max(24px, env(safe-area-inset-bottom));
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(420px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.caller-toast {
+  pointer-events: auto;
+  cursor: pointer;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(28, 28, 30, 0.94);
+  color: #FFFFFF;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Inter', sans-serif);
+  font-size: 15px;
+  line-height: 1.35;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  border-left: 5px solid #0A84FF;
+  animation: caller-toast-in 160ms ease-out;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.caller-toast.leaving {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.caller-toast-success { border-left-color: #30D158; }
+.caller-toast-info    { border-left-color: #0A84FF; }
+.caller-toast-warn    { border-left-color: #FF9F0A; }
+.caller-toast-error   { border-left-color: #FF453A; }
+
+@keyframes caller-toast-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caller-toast { animation: none; }
+}
+
+/* The caller tree never defined a global .hidden helper; components rolled
+   their own. New elements rely on it, so define it once. */
+.hidden {
+  display: none !important;
+}
+
+/* Recording consent notice (legal disclosure, not decoration) */
+.consent-note {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #6B7280;
+  text-align: center;
+  padding: 0 10px;
+}
+
+/* Spoken-language selector */
+.language-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.language-label {
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  color: #6B7280;
+}
+
+.language-select {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 5px 8px;
+  border-radius: 9px;
+  border: 1px solid #D1D5DB;
+  background: #FFFFFF;
+  color: #111827;
+}
+
+/* Statement window countdown + extension */
+.statement-countdown {
+  margin: 8px auto 0;
+  width: fit-content;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(10, 132, 255, 0.1);
+  color: #0A84FF;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.statement-countdown.warn {
+  background: rgba(255, 69, 58, 0.14);
+  color: #FF453A;
+}
+
+.extend-btn {
+  display: block;
+  margin: 8px auto 0;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid #0A84FF;
+  background: transparent;
+  color: #0A84FF;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.extend-btn:active {
+  background: rgba(10, 132, 255, 0.12);
+}
+
+/* Typed-statement fallback when the microphone is unavailable */
+.text-fallback {
+  margin: 12px auto 0;
+  width: min(420px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.text-fallback-label {
+  font-size: 13px;
+  line-height: 1.35;
+  color: #374151;
+}
+
+.text-statement {
+  width: 100%;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 15px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #D1D5DB;
+  background: #FFFFFF;
+  color: #111827;
+}
+
+.text-send-btn {
+  align-self: center;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: none;
+  background: #0A84FF;
+  color: #FFFFFF;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* The quick-action bar is now buttons, not decorative divs. */
+.ios-tab-bar .tab-item {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+}
