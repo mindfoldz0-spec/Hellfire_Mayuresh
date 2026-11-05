@@ -227,6 +227,16 @@ app = create_app()
 
 
 if __name__ == "__main__":
+    import os
+
     import uvicorn
 
-    uvicorn.run("backend.app.main:app", host="0.0.0.0", port=8000, reload=True)
+    # Deployed environments inject PORT; local default stays 8000. Reload is
+    # opt-in (CERS_RELOAD=1) for local development only.
+    port = int(os.environ.get("PORT", "8000"))
+    uvicorn.run(
+        "backend.app.main:app",
+        host="0.0.0.0",
+        port=port,
+        reload=os.environ.get("CERS_RELOAD") == "1",
+    )
